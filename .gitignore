@@ -1,0 +1,9 @@
+# api_key
+ai_prompt_keys.json
+
+# 日志
+*.log
+
+# 缓存
+__pycache__/
+*.pyc
