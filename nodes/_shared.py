@@ -384,6 +384,16 @@ def pick_fallback(provider_name, models):
 HAS_CN = re.compile(r"[\u4e00-\u9fff]")
 
 ERROR_ADVICE = {
+    # 这几条要放在通用的 HTTP 码前面，否则会被笼统的提示盖住
+    "location is not supported": (
+        "该服务商不向本地区开放：说明请求是用服务器自己的 IP 直连出去的，代理没生效。\n"
+        "办法一：在高级输入的“代理地址”里填上代理端口（如 127.0.0.1:7890），不要只靠环境变量；\n"
+        "办法二：换成国内服务商（DeepSeek、通义千问），它们没有地区限制"
+    ),
+    "User location": (
+        "该服务商不向本地区开放：代理没生效，请在“代理地址”里填上代理端口，"
+        "或换成国内服务商（DeepSeek、通义千问）"
+    ),
     "HTTP 401": "API Key 错误或已失效，请检查 ai_prompt_keys.json 里的 Key",
     "HTTP 403": "没有访问权限，可能是 Key 无效、服务未开通或该地区不可用",
     "HTTP 402": "账户余额不足，请到服务商官网充值",

@@ -2,7 +2,16 @@ import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
 // 节点类型：只处理这两个
-const TRANSLATOR_TYPES = ["AIPromptTranslator", "AIPromptTranslatorCLIP"];
+// 需要「获取模型列表」按钮的节点
+const TRANSLATOR_TYPES = ["AIPromptTranslator", "AIPromptTranslatorCLIP", "VideoPromptWriter"];
+// 需要动态图像输入口的节点，以及各自的输入口前缀和上限
+//   翻译节点：图像1..图像10
+//   视频节点：参考图1..参考图9（全参考模式，官方上限 9 张；首帧/尾帧是固定口，不参与）
+const DYNAMIC_IMG_TYPES = {
+  AIPromptTranslator:     { prefix: "图像",   max: 10 },
+  AIPromptTranslatorCLIP: { prefix: "图像",   max: 10 },
+  VideoPromptWriter:      { prefix: "参考图", max: 9  },
+};
 
 // 记录鼠标位置，用于弹出模型列表的定位
 let lastPointer = { x: window.innerWidth / 2, y: window.innerHeight / 3 };
@@ -86,38 +95,38 @@ function showModelPicker(models, current, onPick) {
 }
 
 // ─── 动态图像输入口：接一个出现下一个，最多 10 个 ─────────────────────────────────
-const IMG_RE  = /^图像(\d+)$/;
-const MAX_IMG = 10;
+const imgRe = (prefix) => new RegExp("^" + prefix + "(\\d+)$");
 const DEFAULT_WIDTH = 460;
 
-function imgNum(inp) {
+function imgNum(inp, re) {
   if (!inp || inp.widget || typeof inp.name !== "string") return 0;
-  const m = inp.name.match(IMG_RE);
+  const m = inp.name.match(re);
   return m ? parseInt(m[1], 10) : 0;
 }
 
-function syncImageInputs(node) {
-  if (!node?.inputs || node.__cnSyncing) return;
+function syncImageInputs(node, cfg) {
+  if (!node?.inputs || node.__cnSyncing || !cfg) return;
+  const re = imgRe(cfg.prefix);
   node.__cnSyncing = true;
   try {
     // 已接线的最大编号 → 需要显示到 最大编号+1（留一个空位）
     let maxConnected = 0;
     for (const inp of node.inputs) {
-      const n = imgNum(inp);
+      const n = imgNum(inp, re);
       if (n && inp.link != null) maxConnected = Math.max(maxConnected, n);
     }
-    const want = Math.min(maxConnected + 1, MAX_IMG);
+    const want = Math.min(maxConnected + 1, cfg.max);
 
     // 从后往前删：编号超出且没接线的
     for (let k = node.inputs.length - 1; k >= 0; k--) {
       const inp = node.inputs[k];
-      const n = imgNum(inp);
+      const n = imgNum(inp, re);
       if (n > want && inp.link == null) node.removeInput(k);
     }
     // 补齐 1..want 中缺少的
-    const have = new Set(node.inputs.map(imgNum).filter(Boolean));
+    const have = new Set(node.inputs.map((i) => imgNum(i, re)).filter(Boolean));
     for (let n = 1; n <= want; n++) {
-      if (!have.has(n)) node.addInput("图像" + n, "IMAGE");
+      if (!have.has(n)) node.addInput(cfg.prefix + n, "IMAGE");
     }
   } finally {
     node.__cnSyncing = false;
@@ -158,7 +167,7 @@ app.registerExtension({
         if (loading) return;
         loading = true;
         const provider = providerW.value;
-        notify("提示词翻译", `正在获取 ${provider} 的模型列表…`);
+        notify("自定义节点", `正在获取 ${provider} 的模型列表…`);
         try {
           const resp = await api.fetchApi("/custom_nodes/models", {
             method: "POST",
@@ -175,7 +184,7 @@ app.registerExtension({
           } else {
             showModelPicker(data.models, modelW.value || data.default, (m) => {
               setWidget(node, modelW, m);
-              notify("提示词翻译", `已选择：${m}`, "success");
+              notify("自定义节点", `已选择：${m}`, "success");
             });
           }
         } catch (err) {
@@ -195,7 +204,7 @@ app.registerExtension({
         node.widgets.splice(pIdx + 1, 0, btn);
       }
       // 默认更宽、更矮：先收起多余的图像口，再按内容定高度
-      syncImageInputs(node);
+      if (DYNAMIC_IMG_TYPES[nodeData.name]) syncImageInputs(node, DYNAMIC_IMG_TYPES[nodeData.name]);
       const min = node.computeSize?.() ?? node.size;
       node.setSize?.([Math.max(DEFAULT_WIDTH, min[0]), min[1]]);
       return result;
@@ -205,9 +214,9 @@ app.registerExtension({
     const onConnChange = nodeType.prototype.onConnectionsChange;
     nodeType.prototype.onConnectionsChange = function (type, index, connected, linkInfo) {
       const r = onConnChange?.apply(this, arguments);
-      if (type === 1) {  // 1 = 输入端
-        const node = this;
-        setTimeout(() => syncImageInputs(node), 0);
+      if (type === 1 && DYNAMIC_IMG_TYPES[nodeData.name]) {  // 1 = 输入端
+        const node = this, cfg = DYNAMIC_IMG_TYPES[nodeData.name];
+        setTimeout(() => syncImageInputs(node, cfg), 0);
       }
       return r;
     };
@@ -229,7 +238,10 @@ app.registerExtension({
     nodeType.prototype.onConfigure = function (info) {
       const r = onConfigure?.apply(this, arguments);
       const self = this;
-      setTimeout(() => syncImageInputs(self), 0);
+      if (DYNAMIC_IMG_TYPES[nodeData.name]) {
+        const cfg = DYNAMIC_IMG_TYPES[nodeData.name];
+        setTimeout(() => syncImageInputs(self, cfg), 0);
+      }
       const vals = info?.properties?.cn_values;
       if (vals) {
         for (const w of this.widgets || []) {
