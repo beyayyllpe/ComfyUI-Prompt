@@ -7,3 +7,6 @@ ai_prompt_keys.json
 # 缓存
 __pycache__/
 *.pyc
+
+# 自定义模板
+ai_prompt_templates.json
