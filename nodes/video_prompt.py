@@ -311,12 +311,28 @@ VIDEO_TEMPLATES = {
     ),
 
     "视频_分段续写": (
-        "本段要接在上一段后面，形成连续的长视频：\n"
-        "1. 人物外貌、发型、服装、妆容必须与上一段完全一致，并在本段提示词里重新完整描述一遍"
-        "（视频模型不记得上一段）。\n"
-        "2. 场景、光线、色调延续上一段结尾的状态。\n"
-        "3. 本段的起始动作要从上一段的结束姿态自然接上。\n"
-        "4. 情绪和节奏在上一段基础上推进，不要重复同样的动作。"
+        "本段要接在上一段后面，形成连续的长视频。\n"
+        "\n"
+        "⚠ 最容易出问题的是【人物一代代变样】：视频模型不记得上一段，"
+        "所以每段都得把外貌重新描述一遍；如果这份描述是照着上一段的描述再抄一遍，"
+        "抄到第十段就不是同一个人了。所以：\n"
+        "1. 外貌、发型、服装、妆容、关键道具，【只从\u300c设定集\u300d里照抄】，"
+        "一个字都不要改写、不要润色、不要补充细节。\n"
+        "2. 没有给设定集时，才从上一段的提示词里提取，并且要尽量原样搬运。\n"
+        "3. 上一段提示词的用途是：接住结尾的姿态、位置、情绪、光线状态，"
+        "以及避免重复同样的动作。不要从它那里取外貌描述。\n"
+        "\n"
+        "其余衔接要求：\n"
+        "· 场景、光线、色调延续上一段结尾的状态。\n"
+        "· 本段的起始动作从上一段的结束姿态自然接上。\n"
+        "· 情绪和节奏在上一段基础上推进，不要重复同样的动作。"
+    ),
+
+    "视频_设定集": (
+        "【设定集】这是整条长视频的固定底稿，每一段都必须原样使用：\n"
+        "· 里面写到的外貌、服装、场景、道具，照抄进本段提示词，不许改写、不许润色。\n"
+        "· 它比上一段提示词、比你自己的判断都优先。\n"
+        "· 设定集没写到的部分，才由你补。"
     ),
 
     "视频_负面默认": (
@@ -452,6 +468,8 @@ MODEL_SPEC_KEY = "视频模型规范"
 # 普通模板的版本号。内容改进后在这里 +1，用户 json 里的旧版本会在重启时自动替换。
 # 没列在这里的模板一旦写进 json 就永远以用户的为准。
 TEMPLATE_VERSIONS = {
+    "视频_分段续写": 2,
+    "视频_设定集": 1,
     "视频_导演守则": 3,
     "视频_骨架": 2,
     "视频_大白话翻译": 2,
@@ -843,7 +861,23 @@ class VideoPromptWriter:
                 "上一段提示词": ("STRING", {
                     "multiline": True, "default": "", "advanced": True,
                     "placeholder": "做长视频时，把上一段的输出接进来或粘贴进来",
-                    "tooltip": "填了就进入分段续写：人物、服装、场景、情绪自动衔接上一段",
+                    "tooltip": "填了就进入分段续写。它只负责接住结尾的姿态、情绪、光线，\n"
+                               "外貌走「设定集」——这样才不会一段段抄变样",
+                }),
+                "设定集": ("STRING", {
+                    "multiline": True, "default": "", "advanced": True,
+                    "placeholder": "长视频的固定底稿，写一次，每段都原样带上。例如：\n女主角：二十岁出头东亚面孔，齐肩黑直发，金色敦煌舞衣，左前臂是金银机械义肢\n场景：室内殿堂，背景是敦煌佛教壁画，空中有青色光粒",
+                    "tooltip": "治「人物越做越不像」的根。\n"
+                               "AI 会原样照抄，不许改写润色，优先级高于上一段提示词。\n"
+                               "可以让第一段跑完后，用它的输出提炼一份，后面所有段共用",
+                }),
+                "第几段": ("INT", {
+                    "default": 1, "min": 1, "max": 99, "advanced": True,
+                    "tooltip": "当前是长视频的第几段。AI 据此决定该铺垫、推进还是收尾",
+                }),
+                "共几段": ("INT", {
+                    "default": 1, "min": 1, "max": 99, "advanced": True,
+                    "tooltip": "整条长视频一共几段。填 1 表示不是长视频",
                 }),
                 "风格方向": ("STRING", {
                     "default": "", "advanced": True,
@@ -903,6 +937,22 @@ class VideoPromptWriter:
                     "<Picture 1> (from " + last + ") aligns with the "
                     + dur + "-second mark of the target video.")
         return ""
+
+    # ── 段落位置 → 节奏提示 ──
+    def _segment_note(self, now, total):
+        now = max(1, min(int(now), int(total)))
+        base = ("长视频位置：这是第 " + str(now) + " 段，共 " + str(total) + " 段。")
+        if now == 1:
+            base += "作为开场，先把人物、场景和基调立住，动作不要太满，给后面留空间。"
+        elif now == total:
+            base += "这是最后一段，要收住：动作走向静止或离场，情绪落定，不要抛出新信息。"
+        elif now <= total / 3:
+            base += "处于铺垫段，继续建立状态，变化幅度保持克制。"
+        elif now >= total * 2 / 3:
+            base += "处于收束段，开始往结尾聚拢，不要引入新的人物或场景。"
+        else:
+            base += "处于推进段，要有实质进展，但一段只推进一件事。"
+        return base
 
     # ── 拍摄设置 → 硬命令 ────────────────────────────────────────────────────
     def _shoot_block(self, spec, 时长, 分镜, 运镜, 光线, 表情, 声音, 运镜被覆盖):
@@ -976,7 +1026,8 @@ class VideoPromptWriter:
     # ── 组装系统指令 ─────────────────────────────────────────────────────────
     def _build_system(self, tpl, spec, 时长, mode_key, shoot, locks_text, align,
                       has_prev, has_lines, neg_text, ref_text,
-                      声音, 风格方向, 额外要求, 自定义指令):
+                      声音, 风格方向, 额外要求, 自定义指令,
+                      bible="", seg_now=1, seg_total=1):
         if 自定义指令 and 自定义指令.strip():
             parts = [自定义指令.strip()]
         else:
@@ -1010,6 +1061,10 @@ class VideoPromptWriter:
                 if 声音 == "再加配乐":
                     parts.append(tpl["视频_配乐守则"])
 
+            if bible:
+                parts.append(tpl["视频_设定集"] + "\n\n设定集内容：\n" + bible)
+            if seg_total > 1:
+                parts.append(self._segment_note(seg_now, seg_total))
             if has_prev:
                 parts.append(tpl["视频_分段续写"])
             if has_lines and spec.get("支持对白", False):
@@ -1035,7 +1090,7 @@ class VideoPromptWriter:
             画面要求="", 运镜要求="", 动作与表演="", 光线与色调="",
             声音要求="", 分镜节奏="",
             台词="", 负面要求="使用默认", 负面内容="", 参考素材说明="",
-            上一段提示词="", 风格方向="",
+            上一段提示词="", 设定集="", 第几段=1, 共几段=1, 风格方向="",
             给AI的额外要求="", 思考模式="关闭", API密钥="", 代理地址="",
             自定义指令="", 详细日志="关闭"):
 
@@ -1153,10 +1208,12 @@ class VideoPromptWriter:
                                   bool((运镜要求 or "").strip()))
         align = self._align_line(mode_key, 视频时长, shot_n) if spec.get("用官方格式", False) else ""
 
+        bible = (设定集 or "").strip()
         system = self._build_system(
             tpl, spec, 视频时长, mode_key, shoot, locks_text, align,
             bool(prev), bool(lines_txt), neg_text, ref,
             声音, 风格方向, 给AI的额外要求, 自定义指令,
+            bible, 第几段, 共几段,
         )
         if 每次运行 == "随机":
             system += ("\n\n补充：请给出与上次不同的具体方案，紧扣用户原意和上面的拍摄设置，"
@@ -1201,7 +1258,11 @@ class VideoPromptWriter:
                  + ("　" + "，".join(spend_items) if spend_items else "　（全部默认，最稳）"))
         if locks:
             head += "\n已锁定：" + "、".join(n for n, _ in locks)
+        if 共几段 > 1:
+            head += "\n长视频：第 " + str(第几段) + " / " + str(共几段) + " 段"
         extras = []
+        if bible:
+            extras.append("设定集")
         if prev:
             extras.append("分段续写")
         if lines_txt and spec.get("支持对白", False):

@@ -96,7 +96,33 @@ function showModelPicker(models, current, onPick) {
 
 // ─── 动态图像输入口：接一个出现下一个，最多 10 个 ─────────────────────────────────
 const imgRe = (prefix) => new RegExp("^" + prefix + "(\\d+)$");
+// 每个节点的初始宽度。视频节点参数多，给宽一点，这样同样的内容更矮
+const NODE_WIDTH = {
+  AIPromptTranslator:     460,
+  AIPromptTranslatorCLIP: 460,
+  VideoPromptWriter:      560,
+};
 const DEFAULT_WIDTH = 460;
+// 多行文本框的初始高度上限（像素）。节点太长主要就是这些框撑的，
+// 收到两三行即可，用户想写长内容自己拖大节点就行。
+const MULTILINE_INIT_H = 64;
+
+// 把多行输入框的"最小高度"压下来，让 computeSize 算出更矮的节点
+function shrinkMultiline(node) {
+  for (const w of node.widgets || []) {
+    try {
+      const isMulti = w?.options?.multiline || w?.type === "customtext";
+      if (!isMulti || w.__cnShrunk || typeof w.computeSize !== "function") continue;
+      const orig = w.computeSize.bind(w);
+      w.computeSize = function (width) {
+        const r = orig(width);
+        if (!Array.isArray(r)) return r;
+        return [r[0], Math.min(r[1], MULTILINE_INIT_H)];
+      };
+      w.__cnShrunk = true;
+    } catch (e) { /* 前端版本差异时静默跳过，不影响节点可用 */ }
+  }
+}
 
 function imgNum(inp, re) {
   if (!inp || inp.widget || typeof inp.name !== "string") return 0;
@@ -203,10 +229,12 @@ app.registerExtension({
         node.widgets.splice(bIdx, 1);
         node.widgets.splice(pIdx + 1, 0, btn);
       }
-      // 默认更宽、更矮：先收起多余的图像口，再按内容定高度
+      // 默认更宽、更矮：收起多余图像口 → 压扁多行框 → 按内容定高度
       if (DYNAMIC_IMG_TYPES[nodeData.name]) syncImageInputs(node, DYNAMIC_IMG_TYPES[nodeData.name]);
+      shrinkMultiline(node);
+      const want = NODE_WIDTH[nodeData.name] ?? DEFAULT_WIDTH;
       const min = node.computeSize?.() ?? node.size;
-      node.setSize?.([Math.max(DEFAULT_WIDTH, min[0]), min[1]]);
+      node.setSize?.([Math.max(want, min[0]), min[1]]);
       return result;
     };
 
@@ -242,6 +270,7 @@ app.registerExtension({
         const cfg = DYNAMIC_IMG_TYPES[nodeData.name];
         setTimeout(() => syncImageInputs(self, cfg), 0);
       }
+      shrinkMultiline(self);
       const vals = info?.properties?.cn_values;
       if (vals) {
         for (const w of this.widgets || []) {

@@ -1,12 +1,5 @@
-# api_key
+# 本地配置与运行产物，不纳入版本管理
 ai_prompt_keys.json
-
-# 日志
-*.log
-
-# 缓存
-__pycache__/
-*.pyc
-
-# 自定义模板
 ai_prompt_templates.json
+last_error.log
+__pycache__/

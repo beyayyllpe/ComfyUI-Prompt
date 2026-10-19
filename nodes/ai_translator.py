@@ -23,15 +23,12 @@ from _shared import (
 MODE_ZH    = "中文（Qwen/ZIT/通用）"
 MODE_EN_NL = "英文句子（Krea2/FLUX）"
 MODE_EN_TAG= "英文标签（SDXL/Pony）"
-MODE_VIDEO_ZH = "视频中文（Wan/混元/可灵）"
-MODE_VIDEO_EN = "视频英文（LTX/Veo/Sora）"
 MODE_EDIT_EN = "编辑指令（英文）"
 MODE_EDIT_ZH = "编辑指令（中文）"
 MODE_NEG   = "负面词（英文）"
 MODE_PASS  = "不处理"
-MODES = [MODE_ZH, MODE_EN_NL, MODE_EN_TAG, MODE_VIDEO_ZH, MODE_VIDEO_EN,
+MODES = [MODE_ZH, MODE_EN_NL, MODE_EN_TAG,
          MODE_EDIT_EN, MODE_EDIT_ZH, MODE_NEG, MODE_PASS]
-VIDEO_MODES = (MODE_VIDEO_ZH, MODE_VIDEO_EN)
 EDIT_MODES = (MODE_EDIT_EN, MODE_EDIT_ZH)
 MAX_IMAGES = 10
 
@@ -119,66 +116,6 @@ DEFAULT_TEMPLATES = {
     "图像详细度_简洁": "详细程度：写主要特征即可，覆盖主体、发型、服装、姿态、光线、风格，控制在 25~45 个词或 50~90 字。",
     "图像详细度_适中": "详细程度：覆盖上述全部检查项的主要内容，每项用 1~2 个短语描述，控制在 50~80 个词或 100~160 字。",
     "图像详细度_详细": "详细程度：逐项展开上述全部检查项，材质、纹样、光线层次、背景元素都要写清楚，控制在 80~130 个词或 180~280 字。宁可细也不要漏，但仍然只写图中真实可见的内容。",
-    "输出_视频中文": (
-        "输出：一整段中文，用逗号或短句连接，不分段、不编号。\n"
-        "视频提示词必须同时交代【画面】和【运动】，按以下顺序组织：\n"
-        "1 主体与外貌：人物或物体的具体特征、服装、材质\n"
-        "2 主体动作：从开始到结束的连续动作，写清先后顺序和幅度（如\"先低头整理衣袖，随后抬头望向远处\"）\n"
-        "3 表情与情绪变化：如果有人物\n"
-        "4 镜头运动：推、拉、摇、移、跟随、环绕、升降、手持微晃、固定机位，并说明速度（缓慢/匀速/快速）\n"
-        "5 景别与视角：特写/中景/全景、平视/仰拍/俯拍，以及过程中景别是否变化\n"
-        "6 场景环境：地点、背景元素、天气、时间\n"
-        "7 光线与色调：主光方向、色温、光影在过程中的变化\n"
-        "8 环境动态：风吹、水流、烟雾、粒子、人群、车流等背景运动\n"
-        "9 画面风格与质感：写实/电影感/动画/CG，画质词放最后\n"
-        "要求：动作和镜头运动必须具体可执行，避免\"很美\"\"氛围感强\"这类无法转成画面的词；\n"
-        "一段视频只描述一个连续镜头，不要写分镜切换、不要写转场、不要写台词和字幕。"
-    ),
-    "输出_视频英文": (
-        "英文版要求：把中文内容转成适合视频生成模型的英文提示词，流畅的自然语言，3~6 句。\n"
-        "Cover in this order: subject and appearance; the subject's continuous action from start to finish "
-        "(make the sequence explicit); facial expression and emotional change; camera movement "
-        "(push in, pull out, pan, tilt, tracking, orbit, crane, handheld, static) with speed; shot size and angle, "
-        "and whether they change; environment and time of day; lighting direction, color temperature and how light "
-        "changes; ambient motion (wind, water, smoke, particles, crowd); visual style and quality.\n"
-        "Actions and camera moves must be concrete and filmable. Avoid vague words like \"beautiful\" or \"great vibe\". "
-        "Describe ONE continuous shot: no cuts, no transitions, no dialogue, no subtitles. Output English only."
-    ),
-    "不扩写_视频中文": (
-        "你是视频提示词整理师。把用户的描述整理成规范的中文视频提示词：保持原意，不增加内容，\n"
-        "但要把表述整理成\"主体与外貌 → 主体动作 → 镜头运动 → 场景 → 光线 → 风格\"的顺序，\n"
-        "口语化的动作和运镜说法换成行业通用说法（如\"镜头往前走\"→\"镜头缓慢推进\"）。\n"
-        "用户没写的内容不要补。只描述一个连续镜头，不要分镜和转场。"
-    ),
-    "不扩写_视频英文": (
-        "You are a video prompt translator. Translate the user's description into an English video generation prompt, "
-        "keeping the original meaning and adding nothing. Reorder into: subject, action, camera movement, scene, "
-        "lighting, style. Convert casual wording into standard filmmaking terms (e.g. \"camera goes closer\" -> "
-        "\"camera slowly pushes in\"). One continuous shot only, no cuts or transitions. Output English only."
-    ),
-    "图像_视频中文": (
-        "你是图生视频提示词设计师。给出的图片是视频的【首帧】。\n"
-        "先分析首帧内容（主体、外貌、服装、姿态、场景、光线、风格），然后设计这段视频接下来应该如何运动。\n"
-        "输出一整段中文提示词，包含：\n"
-        "1 对首帧画面的简要描述（主体、服装、场景、光线、风格），保证与图片一致，不要改变人物长相和服装\n"
-        "2 主体接下来的连续动作，幅度要适中、符合物理规律，避免大幅度动作导致画面崩坏\n"
-        "3 表情或情绪的细微变化\n"
-        "4 镜头运动及速度（缓慢推进、轻微环绕、手持微晃、固定机位等）\n"
-        "5 环境中的动态元素（发丝飘动、衣料摆动、风、光斑、烟雾、背景人流等）\n"
-        "6 光影在过程中的细微变化\n"
-        "只描述图中真实存在的内容，不要新增人物或物体；只写一个连续镜头，不要分镜和转场。"
-    ),
-    "图像_视频英文": (
-        "You are an image-to-video prompt designer. The given picture is the FIRST FRAME of the video.\n"
-        "First read the frame (subject, appearance, clothing, pose, scene, lighting, style), then describe how the "
-        "shot should move. Output one English paragraph covering: a brief faithful description of the frame "
-        "(do not change the character's face or clothing); the subject's continuous, physically plausible motion "
-        "(keep it moderate to avoid artifacts); subtle expression change; camera movement and speed (slow push in, "
-        "gentle orbit, subtle handheld, static); ambient motion (hair, fabric, wind, particles, smoke, background "
-        "crowd); subtle lighting change.\n"
-        "Describe only what is visible, add no new subjects. ONE continuous shot, no cuts or transitions. Output English only."
-    ),
-    "视频时长提示": "时长参考：这段提示词用于约 5 秒的短视频，动作总量控制在 1~2 个连续动作，不要安排过多情节。",
     "编辑_英文": (
         "You are an expert at writing instructions for image editing models (Qwen-Image-Edit, FLUX Kontext). "
         "The user describes what they want to change, usually referring to the pictures as 图1/图2 (Picture 1/Picture 2).\n"
@@ -244,7 +181,7 @@ def load_templates():
 
 _EXP_KEY = {EXP_BRIEF: "篇幅_简洁", EXP_MID: "篇幅_适中", EXP_DETAIL: "篇幅_详细"}
 _MODE_KEY = {MODE_ZH: "中文", MODE_EN_NL: "英文句子", MODE_EN_TAG: "英文标签",
-             MODE_VIDEO_ZH: "视频中文", MODE_VIDEO_EN: "视频英文"}
+             }
 
 
 def _build_system(mode, expansion, style_hint, extra_rules, has_image=False, custom="", n_images=0):
@@ -285,7 +222,7 @@ def _build_system(mode, expansion, style_hint, extra_rules, has_image=False, cus
     else:
         parts.append(tpl["扩写核心"])
         parts.append(tpl[_EXP_KEY.get(expansion, "篇幅_适中")])
-        if mode in (MODE_ZH, MODE_VIDEO_ZH):
+        if mode == MODE_ZH:
             parts.append(tpl["输出_" + _MODE_KEY[mode]])
         else:
             parts.append(tpl["输出_" + _MODE_KEY[mode]])
@@ -397,8 +334,6 @@ class AIPromptTranslator:
                         "中文（Qwen/ZIT/通用）：中文自然语言，适合 Z-Image、Qwen-Image、可图、混元、Wan\n"
                         "英文句子（Krea2/FLUX）：英文自然语言句子，适合 Krea 2、FLUX.2\n"
                         "英文标签（SDXL/Pony）：英文逗号标签，适合 SDXL、Pony、Illustrious\n"
-                        "视频中文（Wan/混元/可灵）：中文视频提示词，含动作、镜头运动、环境动态\n"
-                        "视频英文（LTX/Veo/Sora）：英文视频提示词，同上\n"
                         "· 视频模式接入图片时按“首帧”处理，描述画面接下来如何运动\n"
                         "编辑指令（英文/中文）：给 Qwen-Image-Edit、FLUX Kontext 等编辑模型用的改图指令；"
                         "文本框写意图如“让图2的女孩穿上图1的衣服”。Kontext 只认英文，Qwen-Edit 中英都行\n"
@@ -529,7 +464,7 @@ class AIPromptTranslator:
 
         # ── 机器翻译分支 ────────────────────────────────────────────────────────
         if is_mt:
-            if 目标格式 in (MODE_ZH, MODE_EDIT_ZH, MODE_VIDEO_ZH):
+            if 目标格式 in (MODE_ZH, MODE_EDIT_ZH):
                 raise RuntimeError(服务商 + " 是机器翻译，只能翻译成英文。请选英文类的目标格式，或换用 AI 服务商")
             if not text:
                 raise RuntimeError(服务商 + " 需要输入文本才能翻译")
@@ -581,7 +516,7 @@ class AIPromptTranslator:
         is_edit      = actual_mode in EDIT_MODES
         needs_expand = (扩写程度 != EXP_NONE and actual_mode != MODE_NEG)
         temperature  = 0.2 if (has_image or is_edit or not needs_expand) else 创意度
-        use_json     = needs_expand and not has_image and not is_edit and actual_mode in (MODE_EN_NL, MODE_EN_TAG, MODE_VIDEO_EN)
+        use_json     = needs_expand and not has_image and not is_edit and actual_mode in (MODE_EN_NL, MODE_EN_TAG)
 
         if has_image:
             default_ask = ("请根据以上图片写出编辑指令" if is_edit else "请分析这张图片并生成提示词")
@@ -653,7 +588,7 @@ class AIPromptTranslator:
                         log.warn("未按 JSON 格式返回，已按纯文本处理")
                 else:
                     result = clean_text(raw)
-                    zh = result if actual_mode in (MODE_ZH, MODE_EDIT_ZH, MODE_VIDEO_ZH) else ""
+                    zh = result if actual_mode in (MODE_ZH, MODE_EDIT_ZH) else ""
 
                 if not result:
                     last_err = "模型返回了空内容"
@@ -661,7 +596,7 @@ class AIPromptTranslator:
                     continue
 
                 # ── 英文模式中文残留检测 ────────────────────────────────────────
-                english_mode = actual_mode in (MODE_EN_NL, MODE_EN_TAG, MODE_NEG, MODE_EDIT_EN, MODE_VIDEO_EN)
+                english_mode = actual_mode in (MODE_EN_NL, MODE_EN_TAG, MODE_NEG, MODE_EDIT_EN)
                 if english_mode and HAS_CN.search(result):
                     if not cn_retried:
                         cn_retried = True
