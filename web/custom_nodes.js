@@ -103,6 +103,13 @@ const NODE_WIDTH = {
   VideoPromptWriter:      560,
 };
 const DEFAULT_WIDTH = 460;
+// 节点刚拖出来时的初始高度（像素）。不写就按 computeSize 算，
+// 而多行输入框会把那个值撑得很大，节点又细又长。
+const NODE_HEIGHT = {
+  AIPromptTranslator:     520,
+  AIPromptTranslatorCLIP: 540,
+  VideoPromptWriter:      620,
+};
 // 多行文本框的初始高度上限（像素）。节点太长主要就是这些框撑的，
 // 收到两三行即可，用户想写长内容自己拖大节点就行。
 const MULTILINE_INIT_H = 64;
@@ -162,6 +169,21 @@ function syncImageInputs(node, cfg) {
   if (min) node.setSize?.([Math.max(node.size[0], min[0]), min[1]]);
   node.setDirtyCanvas?.(true, true);
   app.graph?.setDirtyCanvas?.(true, true);
+}
+
+// 把多行输入框的 DOM 高度压到两三行（新版 Vue 渲染走这条路）
+function compactTextareas(node) {
+  setTimeout(() => {
+    for (const w of node.widgets || []) {
+      try {
+        const el = w?.element || w?.inputEl;
+        if (!el || el.tagName !== "TEXTAREA" || el.__cnCompact) continue;
+        el.style.minHeight = MULTILINE_INIT_H + "px";
+        el.rows = 2;
+        el.__cnCompact = true;
+      } catch (e) { /* 前端版本差异时跳过 */ }
+    }
+  }, 0);
 }
 
 // ─── 注册扩展 ────────────────────────────────────────────────────────────────────
@@ -232,9 +254,13 @@ app.registerExtension({
       // 默认更宽、更矮：收起多余图像口 → 压扁多行框 → 按内容定高度
       if (DYNAMIC_IMG_TYPES[nodeData.name]) syncImageInputs(node, DYNAMIC_IMG_TYPES[nodeData.name]);
       shrinkMultiline(node);
-      const want = NODE_WIDTH[nodeData.name] ?? DEFAULT_WIDTH;
+      const wantW = NODE_WIDTH[nodeData.name] ?? DEFAULT_WIDTH;
+      const wantH = NODE_HEIGHT[nodeData.name];
       const min = node.computeSize?.() ?? node.size;
-      node.setSize?.([Math.max(want, min[0]), min[1]]);
+      node.setSize?.([Math.max(wantW, min[0]), wantH ?? min[1]]);
+      // Nodes 2.0 的多行框是 DOM 元素，computeSize 管不到它，
+      // 再直接把 textarea 的最小高度压一下，双保险。
+      compactTextareas(node);
       return result;
     };
 
