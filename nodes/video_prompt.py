@@ -50,7 +50,15 @@ VIDEO_TEMPLATES = {
         "3. 每一个细节都必须对应画面上看得见、或声音里听得见的东西。\n"
         "4. 用动词不用形容词：写 unfolds、snaps、drifts，不要写 modern、sleek、beautiful。\n"
         "5. 动作要符合物理规律。一个镜头里只安排一个主要动作，多了画面会崩。\n"
-        "6. 信息密度比长度重要，不要为了显得详细而灌水。"
+        "6. 信息密度比长度重要，不要为了显得详细而灌水。\n"
+        "7. ⚠ 不要用抽象的评价词。cinematic、beautiful、stunning、epic、high quality 这类词"
+        "只能出现在 [Shot 1] 开头的风格声明里（如 Live-action, cinematic, ...），"
+        "正文其余部分一律换成具体的画面和声音细节。\n"
+        "8. ⚠ 正文是逐秒看得见听得见的拍摄描述，不是剧情梗概。"
+        "不要写\u300c她回忆起往事\u300d\u300c两人关系变得紧张\u300d这种镜头拍不出来的东西，"
+        "要写她做了什么动作、脸上什么变化、听见什么声音。\n"
+        "9. ⚠ 用到的每一个引用标签（<Subject N>、<Picture N>、<Video N>、<Audio N>）"
+        "都必须先在定义段里出现过，不许凭空使用没定义的编号。"
     ),
 
     # ===== 共用：三十格骨架（内部检查清单，不是输出格式）=====
@@ -378,6 +386,126 @@ VIDEO_TEMPLATES = {
         "· 不要列用户自己写死的东西，那些不是你补的"
     ),
 
+    # ===== 视频风格预设（下拉框内容由此生成；提炼自 MiniMax 官方风格技能）=====
+    "视频风格预设": {
+        "不使用": {
+            "版本": 1,
+            "说明": "不注入任何风格约束，风格由你的想法和「风格方向」决定",
+            "约束": "",
+        },
+        "3D动画（皮克斯风）": {
+            "版本": 1,
+            "说明": "C4D+Octane 质感的三维卡通，夸张表演、弹性运动",
+            "约束": (
+                "【风格锁定：皮克斯风 3D 卡通】\n"
+                "渲染：Pixar-inspired 3D cartoon rendering, C4D and Octane renderer look, "
+                "high-end animated feature quality.\n"
+                "角色设计：夸张的几何化简约 + 高质量材质细节。避免 100% 写实人体解剖，"
+                "用高度概括的形体语言、大而清晰的剪影；可爱或童稚角色常用 2.5~3 头身，"
+                "大头、紧凑身体、高辨识度。\n"
+                "毛发：结实的雕塑感发块 + 边缘细碎飞发和绒毛轮廓，受光时既有设计感又有触感。\n"
+                "皮肤：warm subsurface scattering，耳朵、脸颊、鼻尖、指尖透出柔和的红色透光；"
+                "绝不要硬塑料质感的皮肤。\n"
+                "表演：迪士尼／皮克斯式夸张生动的角色动画，squash and stretch，"
+                "眉毛、眼角、瞳孔、嘴唇、脸颊形变都要有戏。\n"
+                "运动：高能量姿态、清晰的动作线、前倾、强预备动作、快而可读的节奏、"
+                "弹性身体力学、生动的微表情。\n"
+                "负面：no photorealistic live-action, no flat 2D anime, no plastic toy skin, "
+                "no stiff mannequin posing, no realistic anatomical stiffness, no lifeless facial expressions."
+            ),
+        },
+        "手绘发光×实拍融合": {
+            "版本": 1,
+            "说明": "粗糙手绘发光动画出现在实拍空间里，接触、变形、逃跑，镜头慢半拍追",
+            "约束": (
+                "【风格锁定：手绘发光动画 × 实拍融合】\n"
+                "影像结构必须保留：实拍空间中出现平面的手绘发光动画；"
+                "动画与真实的手或真实物体发生清晰接触；"
+                "它作为同一个实体连续变形并逃跑；手持镜头总是慢半拍追赶。\n"
+                "质感：像蜡笔、粉笔、彩色铅笔、粉彩、粗糙笔刷；线条轻微抖动，"
+                "有涂抹不均、毛边和逐帧重画的手工感。\n"
+                "开场 0~3 秒必须出现实拍的手与手绘动画的清晰接触"
+                "（缠住手指、落在掌心、被抓时逃跑、从指尖诞生）。\n"
+                "变形要连续：可在线条、生物、记号、植物、交通工具、生活小物之间变化，"
+                "但要保留前一形态的痕迹，不允许突然冒出另一个全新角色。\n"
+                "全片在同一空间或相邻范围内连续展开，像拍摄者边走边追，不要跳到别的地点。\n"
+                "拍摄者要参与：伸手、抓、追、开门、接住、后退、被恶作剧。\n"
+                "调性是可爱、生活感、怀旧、温柔，略带切感，不是恐怖喜剧。\n"
+                "结尾要有空间级变形：线条扩散到墙面、地板、天花板、窗户，"
+                "变成巨大的花、星空、夕阳、云或涂鸦小镇，留一点余韵和可爱笑点。\n"
+                "负面：no 3DCG, no plush toy look, no uniform vector lines, no smooth neon, "
+                "no horror monster, no giant eyes, no gaping mouth, no teeth, no threatening lunge, "
+                "no sudden blackout, no jump scare."
+            ),
+        },
+        "纸艺定格（立体纸偶）": {
+            "版本": 1,
+            "说明": "层叠硬纸、纸偶、立体书场景，逐帧手工摆拍的停格动画",
+            "约束": (
+                "【风格锁定：纸艺定格动画】\n"
+                "所有可见物体都要像真的用纸做的：层叠硬纸板、裁切边缘、纸纤维、折痕、接缝、"
+                "插片、铆钉、关节、拉条、滑块、旋转圆盘，以及看得见的厚度。\n"
+                "运动要像逐帧手工摆拍：小步进式移动、细微停顿、轻微回弹、铰链式动作、"
+                "纸机关滑动、翻页、拉条揭示、纸片落定。\n"
+                "背景也尽量是纸机关：纸云沿轨道滑动、纸月亮在轨道上移动、"
+                "层叠景片视差位移、纸叶飘落、纸灯摇晃、纸板门开启。\n"
+                "画面层次：用前景遮挡物（纸叶、纸云、画框、帘子、剪影）制造纵深，"
+                "物体之间要有真实的纸张投影。\n"
+                "负面：no smooth CG motion, no plastic 3D surfaces, no flat vector backdrops, "
+                "no static background, no large character motion that breaks the miniature stop-motion feel."
+            ),
+        },
+        "纸拼贴（半调编辑风）": {
+            "版本": 1,
+            "说明": "平涂色块 + 黑白半调照片剪贴，定格拼装，带纸张音效",
+            "约束": (
+                "【风格锁定：半调纸拼贴】\n"
+                "视觉语言：premium editorial halftone paper collage —— 平涂的大胆色块、"
+                "黑白半调照片剪影、选择性的彩色卡纸点缀、温暖的米色描边、柔和的纸张投影。\n"
+                "运动语言：触感十足的定格拼装 —— 元素一片片拼上来、落定、轻微回弹。"
+                "不要缓慢推镜、不要泛泛的漂移、不要平滑的数字图层位移。\n"
+                "声音默认只保留纸张音效：纸片滑动、弹跳、按压、轻微窸窣、轻点，"
+                "除非明确要求，不加背景音乐、不加旁白、不加字幕。\n"
+                "负面：no smooth digital layer motion, no photographic realism, no 3D rendering, "
+                "no gradient-heavy illustration, no drifting camera."
+            ),
+        },
+        "极简产品广告（苹果风）": {
+            "版本": 1,
+            "说明": "干净背景、高级运镜、画面内英文短文案的产品片",
+            "约束": (
+                "【风格锁定：极简产品广告】\n"
+                "画面：干净到极致的背景，没有杂物，产品是唯一主角。"
+                "白色科技风（高亮背景 + 柔和大面积漫射光）或暗色轮廓光风（深色背景 + 边缘勾光）二选一，全片统一。\n"
+                "运镜：高级克制的产品片镜头语言，缓慢精确，一个镜头只做一种运动。\n"
+                "产品本体颜色绝对不许改动。背景、光环境、构图可以调整。\n"
+                "画面内文案：每句 3~5 个英文单词，单行，总长不超过 32 个字符。"
+                "语气像苹果产品片——感官的、讲好处的、讲材质的，"
+                "不要促销口号，不要电商式功能标签，不要只有 1~2 个词的孤立标签。\n"
+                "文案配色：白色科技风里前半句用黑或深灰（白底禁止白字），"
+                "暗色轮廓光风里前半句可用白色；后半句一律用产品本身的颜色。\n"
+                "文字由视频模型直接生成在画面里并控制出现时机，不要留空位等后期叠字。\n"
+                "负面：no clutter, no busy background, no split screen, no collage layout, "
+                "no promotional slogan, no ecommerce feature tags, no product recolor."
+            ),
+        },
+        "音乐MV（节拍字幕）": {
+            "版本": 1,
+            "说明": "歌词文字作为视觉层随节拍运动，不是普通字幕",
+            "约束": (
+                "【风格锁定：音乐 MV 节拍字幕】\n"
+                "画面内文字是设计过的视觉层，不是普通字幕——"
+                "它有自己的字体质感、排版比例、空间位置和运动语言，会随节拍反应。\n"
+                "文字必须用英文双引号原样写出完整字符串，并写清它在第几秒出现、怎么运动。\n"
+                "表演、运镜、转场都要和音乐的节奏对齐，强拍上给硬切或定格。\n"
+                "全片保持同一个 groove、同一种速度感、同一套灯光语言和文字运动规则。\n"
+                "不要因为\u300c这是 MV\u300d就机械地堆表演、堆转场、堆运镜；每一样都要有节拍上的理由。\n"
+                "负面：no ordinary burned-in subtitles, no caption bar at the bottom, "
+                "no random text motion unrelated to the beat, no style drift between shots."
+            ),
+        },
+    },
+
     # ===== 视频模型规范（下拉框内容由此生成）=====
     "视频模型规范": {
         "H3（海螺3）": {
@@ -387,6 +515,8 @@ VIDEO_TEMPLATES = {
             "支持对白": True,
             "支持多镜头": True,
             "用官方格式": True,
+            "时长下限": 4,
+            "时长上限": 15,
             "时长范围": "4~15 秒整数；文生／图生建议 5~10 秒，全参考模式可到 15 秒",
             "规范": (
                 "目标模型：MiniMax H3（海螺 3）。下面是官方提示词格式，严格照做。\n"
@@ -464,13 +594,15 @@ VIDEO_TEMPLATES = {
 }
 
 MODEL_SPEC_KEY = "视频模型规范"
+STYLE_PRESET_KEY = "视频风格预设"
+NESTED_KEYS = (MODEL_SPEC_KEY, STYLE_PRESET_KEY)
 
 # 普通模板的版本号。内容改进后在这里 +1，用户 json 里的旧版本会在重启时自动替换。
 # 没列在这里的模板一旦写进 json 就永远以用户的为准。
 TEMPLATE_VERSIONS = {
     "视频_分段续写": 2,
     "视频_设定集": 1,
-    "视频_导演守则": 3,
+    "视频_导演守则": 4,
     "视频_骨架": 2,
     "视频_大白话翻译": 2,
     "视频_运镜术语表": 3,
@@ -512,7 +644,7 @@ def ensure_video_templates():
 
     changed, upgraded = False, []
     for k, v in VIDEO_TEMPLATES.items():
-        if k == MODEL_SPEC_KEY:
+        if k in NESTED_KEYS:
             specs = data.get(k)
             if not isinstance(specs, dict):
                 specs = {}
@@ -583,10 +715,11 @@ def load_video_templates():
         with open(TEMPLATES_FILE, "r", encoding="utf-8") as f:
             user = json.load(f)
         for k, v in user.items():
-            if k == MODEL_SPEC_KEY and isinstance(v, dict):
-                merged = dict(VIDEO_TEMPLATES[MODEL_SPEC_KEY])
+            if k in NESTED_KEYS and isinstance(v, dict):
+                merged = dict(VIDEO_TEMPLATES[k])
+                need = "规范" if k == MODEL_SPEC_KEY else "说明"
                 for name, spec in v.items():
-                    if isinstance(spec, dict) and str(spec.get("规范", "")).strip():
+                    if isinstance(spec, dict) and str(spec.get(need, "")).strip():
                         merged[name] = spec
                 tpl[k] = merged
             elif isinstance(v, str) and v.strip() and k in VIDEO_TEMPLATES:
@@ -594,6 +727,18 @@ def load_video_templates():
     except Exception:
         pass
     return tpl
+
+
+def style_preset_names():
+    """风格预设下拉：JSON 里有什么就显示什么，「不使用」永远排第一"""
+    try:
+        names = list(load_video_templates().get(STYLE_PRESET_KEY, {}).keys())
+    except Exception:
+        names = list(VIDEO_TEMPLATES[STYLE_PRESET_KEY].keys())
+    names = names or list(VIDEO_TEMPLATES[STYLE_PRESET_KEY].keys())
+    if "不使用" in names:
+        names = ["不使用"] + [n for n in names if n != "不使用"]
+    return names
 
 
 def video_model_names():
@@ -679,6 +824,7 @@ class VideoPromptWriter:
     def INPUT_TYPES(cls):
         providers = _provider_names()
         models = video_model_names()
+        presets = style_preset_names()
         return {
             "required": {
                 "你的想法": ("STRING", {
@@ -725,6 +871,12 @@ class VideoPromptWriter:
                                "不支持声音的模型会自动忽略此项",
                 }),
 
+                "风格预设": (presets if presets else ["不使用"], {
+                    "default": "不使用",
+                    "tooltip": "整条片子的视觉风格锁定，内容提炼自 MiniMax 官方风格技能。\n"
+                               "选中后会把该风格的质感、运动语言和负面约束注入指令。\n"
+                               "想加新风格：在 ai_prompt_templates.json 的「视频风格预设」里照格式加一段",
+                }),
                 "服务商": (providers if providers else ["（请重启ComfyUI）"], {
                     "default": providers[0] if providers else None,
                     "tooltip": "调用哪家 AI 来写提示词。接了图片时需要支持看图的服务商",
@@ -1027,7 +1179,7 @@ class VideoPromptWriter:
     def _build_system(self, tpl, spec, 时长, mode_key, shoot, locks_text, align,
                       has_prev, has_lines, neg_text, ref_text,
                       声音, 风格方向, 额外要求, 自定义指令,
-                      bible="", seg_now=1, seg_total=1):
+                      bible="", seg_now=1, seg_total=1, style_lock=""):
         if 自定义指令 and 自定义指令.strip():
             parts = [自定义指令.strip()]
         else:
@@ -1072,8 +1224,10 @@ class VideoPromptWriter:
             if neg_text:
                 parts.append(tpl["视频_负面写法"])
 
+        if style_lock:
+            parts.append(style_lock)
         if 风格方向 and 风格方向.strip():
-            parts.append("风格方向：整体视觉风格按 " + 风格方向.strip()
+            parts.append("风格方向：在上面风格的基础上再按 " + 风格方向.strip()
                          + " 来统一（用户原文写了的风格优先）。")
         if 额外要求 and 额外要求.strip():
             parts.append("额外要求：" + 额外要求.strip())
@@ -1083,7 +1237,7 @@ class VideoPromptWriter:
 
     # ── 主流程 ────────────────────────────────────────────────────────────────
     def run(self, 你的想法, 目标模型, 视频时长, 分镜, 运镜, 光线, 表情, 声音,
-            服务商, 模型, 创意度, 每次运行,
+            风格预设, 服务商, 模型, 创意度, 每次运行,
             首帧图=None, 尾帧图=None,
             参考图1=None, 参考图2=None, 参考图3=None, 参考图4=None, 参考图5=None,
             参考图6=None, 参考图7=None, 参考图8=None, 参考图9=None,
@@ -1184,6 +1338,16 @@ class VideoPromptWriter:
             分镜 = "1镜到底"
             shot_n = 1
 
+        # 时长是否在目标模型支持的范围内
+        dur_lo, dur_hi = spec.get("时长下限"), spec.get("时长上限")
+        dur_bad = ""
+        if dur_lo and 视频时长 < dur_lo:
+            dur_bad = ("时长 " + str(视频时长) + " 秒低于 " + 目标模型 + " 支持的下限 "
+                       + str(dur_lo) + " 秒")
+        elif dur_hi and 视频时长 > dur_hi:
+            dur_bad = ("时长 " + str(视频时长) + " 秒超出 " + 目标模型 + " 支持的上限 "
+                       + str(dur_hi) + " 秒")
+
         # 变化预算
         quota, spend, spend_items = budget_of(视频时长, 分镜, 运镜, 光线, 表情, 声音)
         over = spend > quota
@@ -1209,11 +1373,13 @@ class VideoPromptWriter:
         align = self._align_line(mode_key, 视频时长, shot_n) if spec.get("用官方格式", False) else ""
 
         bible = (设定集 or "").strip()
+        preset_cfg = tpl.get(STYLE_PRESET_KEY, {}).get(风格预设) or {}
+        style_lock = str(preset_cfg.get("约束", "")).strip()
         system = self._build_system(
             tpl, spec, 视频时长, mode_key, shoot, locks_text, align,
             bool(prev), bool(lines_txt), neg_text, ref,
             声音, 风格方向, 给AI的额外要求, 自定义指令,
-            bible, 第几段, 共几段,
+            bible, 第几段, 共几段, style_lock,
         )
         if 每次运行 == "随机":
             system += ("\n\n补充：请给出与上次不同的具体方案，紧扣用户原意和上面的拍摄设置，"
@@ -1281,6 +1447,9 @@ class VideoPromptWriter:
             head += "\n⚠ 使用了自定义指令（已替换默认指令）"
         log.head(head)
 
+        if dur_bad:
+            log.warn(dur_bad + "（" + str(spec.get("时长范围", "")) + "）。"
+                     "提示词会照写，但视频模型那边可能直接报错或自动截断。")
         if over:
             log.warn("变化预算超了 " + str(spend - quota) + " 点（" + str(视频时长)
                      + " 秒只够 " + str(quota) + " 点）。画面崩坏和人物漂移的概率会明显上升。")
@@ -1379,6 +1548,15 @@ class VideoPromptWriter:
             miss = [f for f in need if f not in prompt]
             if miss:
                 log.warn("官方字段缺失：" + "、".join(miss) + "，建议重跑一次。")
+            if mode_key == "参考素材":
+                head_txt = prompt.split("detailed_description", 1)[0]
+                used = set(_re.findall(r"<(Subject|Picture|Video|Audio)\s*(\d+)>", prompt))
+                defined = set(_re.findall(r"<(Subject|Picture|Video|Audio)\s*(\d+)>", head_txt))
+                undef = sorted(used - defined)
+                if undef:
+                    log.warn("正文用到了没在 subject_definitions 里定义的标签："
+                             + "、".join("<" + a + " " + b + ">" for a, b in undef)
+                             + "，建议重跑一次。")
             for bad in ("[Style]", "[Exclude]", "[Music]", "Framing:", "Camera:"):
                 if bad in prompt:
                     log.warn("出现了官方格式里没有的写法 " + bad + "，建议重跑一次。")
