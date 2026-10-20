@@ -11,7 +11,7 @@ _shared.py — 公共工具模块（下划线开头，框架不会把它当成�
     call_ai(...)        调用 AI，自动处理各家格式差异、思考模式、参数降级
     fetch_models(...)   拉取该服务商可用模型列表
     pick_fallback(...)  推荐模型下线时挑一个替代
-    img_to_b64(tensor)  ComfyUI 图像张量 → base64 PNG（自动限制 1024）
+    img_to_b64(tensor)  ComfyUI 图像张量 → base64 JPEG（上限 1024px，JPEG 省带宽）
     clean_text(s)       清洗 AI 返回（去代码块/引号/前缀）
     join_parts(前,中,后) 拼接固定文字
     advice(错误信息)     把错误码翻译成中文解决建议
@@ -32,7 +32,7 @@ BUILTIN_PROVIDERS = {
         "base": "https://api.deepseek.com",
         "model": "deepseek-flash",
         "env": "DEEPSEEK_API_KEY",
-        "domestic": True, "style": "openai", "vision": False,
+        "domestic": True, "style": "openai", "vision": True,
         "extra": {"thinking": {"type": "disabled"}},  # 新模型默认开思考，这里关掉更快
         "prefix": ("deepseek",),
     },
@@ -233,17 +233,33 @@ def _http_json(opener, url, headers, payload=None, timeout=90):
     except urllib.error.HTTPError as e:
         raise RuntimeError(f"HTTP {e.code}：{e.read().decode('utf-8', 'ignore')[:300]}")
 
+# 发给 AI 的图片编码参数。
+#
+# ⚠ 一定要用 JPEG，不要用 PNG。PNG 不压缩，1024 的一张 base64 就有一两 MB，
+#   接三张参考图请求体好几兆，走代理必被掐断（RemoteDisconnected / SSL EOF）。
+#   换 JPEG 后体积只剩六分之一，连接问题就解决了。
+#
+# ⚠ 分辨率上限不要往下调。图片 token 只按【像素尺寸】算，跟文件多大无关——
+#   也就是说降分辨率才省 token，换 JPEG 不省。但参考图是拿来认脸、认衣服的，
+#   降到 768 以后衣服上的印花、刺绣、首饰细节就糊了，AI 只能瞎写。
+#   省那点 token 不值得拿识图精度换。要省就减少参考图张数，别降分辨率。
+IMG_MAX_EDGE = 1024
+IMG_JPEG_Q   = 85
+
+
 def img_to_b64(tensor):
-    """ComfyUI IMAGE tensor -> (base64 PNG, 原尺寸, 压缩后尺寸)"""
+    """ComfyUI IMAGE tensor -> (base64 JPEG, 原尺寸, 压缩后尺寸)"""
     from PIL import Image
     import numpy as np
     img_np = (tensor[0].cpu().numpy() * 255).clip(0, 255).astype("uint8")
     img = Image.fromarray(img_np)
     orig = img.size
-    if max(img.size) > 1024:
-        img.thumbnail((1024, 1024), Image.LANCZOS)
+    if max(img.size) > IMG_MAX_EDGE:
+        img.thumbnail((IMG_MAX_EDGE, IMG_MAX_EDGE), Image.LANCZOS)
+    if img.mode not in ("RGB", "L"):
+        img = img.convert("RGB")          # JPEG 不支持透明通道
     buf = BytesIO()
-    img.save(buf, format="PNG")
+    img.save(buf, format="JPEG", quality=IMG_JPEG_Q, optimize=True)
     return base64.b64encode(buf.getvalue()).decode("utf-8"), orig, img.size
 
 
@@ -259,7 +275,7 @@ def _open_direct(req, timeout=30):
 
 # ─── AI 调用 ───────────────────────────────────────────────────────────────────
 def call_ai(provider_name, model, key, system, user_text, temperature,
-             proxy="", image_b64=None, thinking=False, log=None):
+             proxy="", image_b64=None, thinking=False, log=None, timeout_s=None):
     """返回 (文本, 实际使用的模型, usage字典)"""
     cfg   = get_all_providers().get(provider_name, {})
     style = cfg.get("style", "openai")
@@ -270,7 +286,8 @@ def call_ai(provider_name, model, key, system, user_text, temperature,
 
     think_off, think_on = THINKING_PARAMS.get(provider_name, ({}, {}))
     think_params = think_on if thinking else think_off
-    timeout = 240 if thinking else 90
+    base_t  = timeout_s or 90
+    timeout = base_t * 2 if thinking else base_t
 
     # image_b64 可以是单个字符串，也可以是列表（多图，按顺序标注为 图1、图2…）
     # 列表元素可以是 base64 字符串，或 (编号, base64) 元组（编号对应节点上的 图像N 输入口）
@@ -282,9 +299,9 @@ def call_ai(provider_name, model, key, system, user_text, temperature,
             if len(images) > 1:
                 user_content.append({"type": "text", "text": "图" + str(idx) + "（Picture " + str(idx) + "）："})
             if style == "anthropic":
-                user_content.append({"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": b64}})
+                user_content.append({"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": b64}})
             else:
-                user_content.append({"type": "image_url", "image_url": {"url": "data:image/png;base64," + b64}})
+                user_content.append({"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + b64}})
         user_content.append({"type": "text", "text": user_text})
     else:
         user_content = user_text
@@ -314,6 +331,7 @@ def call_ai(provider_name, model, key, system, user_text, temperature,
         show = {k: v for k, v in payload.items() if k != "messages"}
         log.detail("请求参数", json.dumps(show, ensure_ascii=False))
         log.add("\u2192 请求已发送（超时 " + str(timeout) + " 秒）")
+        log.flush_now()   # 立刻打出来，别让用户干等时以为卡死
 
     bodies = [payload, minimal] if payload != minimal else [payload]
     last_err = None
@@ -326,6 +344,13 @@ def call_ai(provider_name, model, key, system, user_text, temperature,
         except RuntimeError as e:
             last_err = e
             if not str(e).startswith("HTTP 400"):
+                raise
+            # ⚠ 不是所有 400 都是参数问题。地区封锁、额度、密钥失效也会返回 400，
+            #   这些再怎么精简参数都一样会失败，重发纯属白跑一趟。
+            low_e = str(e).lower()
+            if any(k in low_e for k in ("location", "region", "country",
+                                        "quota", "billing", "api key",
+                                        "permission", "unsupported_country")):
                 raise
             if log and i + 1 < len(bodies):
                 log.warn("参数被拒绝（" + str(e)[:80] + "），已去掉可选参数重新发送")
@@ -401,7 +426,24 @@ ERROR_ADVICE = {
     "HTTP 429": "请求太频繁或超出配额，稍后再试",
     "HTTP 500": "服务商内部错误，稍后重试即可",
     "HTTP 503": "服务商暂时不可用，稍后重试即可",
-    "UNEXPECTED_EOF": "代理连接被断开：请在高级输入的“代理地址”填本地代理端口（如 127.0.0.1:7890），并确认代理软件已开启",
+    # 对端在读完请求前就掐断连接。能刷新模型列表（几 KB 的小请求）却发不出提示词
+    # （带图的大请求），基本就是这一条：网络是通的，是请求体太大走不动代理。
+    "RemoteDisconnected": (
+        "请求发出去一半被掐断了。注意：如果“获取模型列表”能正常刷新，那网络是通的，"
+        "问题在请求体太大——带图的请求比刷新列表大上千倍，代理扛不住就会这样。\n"
+        "办法一：减少参考图数量（三张改一两张）；\n"
+        "办法二：换成国内服务商（DeepSeek、通义千问），不走代理就不会被掐；\n"
+        "办法三：代理软件换个节点，或在“代理地址”里填本地代理端口（如 127.0.0.1:7890）"
+    ),
+    "UNEXPECTED_EOF": (
+        "代理连接被断开。如果“获取模型列表”刷得动，说明网络没问题，是带图的请求太大。\n"
+        "办法：减少参考图数量，或换国内服务商（DeepSeek、通义千问），"
+        "也可以在“代理地址”填本地代理端口（如 127.0.0.1:7890）并确认代理软件已开启"
+    ),
+    "ConnectionReset": (
+        "连接被重置：多半是请求体过大或代理不稳。减少参考图数量，"
+        "或换成国内服务商（DeepSeek、通义千问）"
+    ),
     "SSL": "加密连接失败：多为代理问题，请在“代理地址”填本地代理端口（如 127.0.0.1:7890），或检查代理软件是否开启",
     "timed out": "连接超时：海外服务商请检查代理，国内服务商请检查网络",
     "URLError": "网络连接失败：海外服务商请检查代理，国内服务商请检查网络",
@@ -449,6 +491,16 @@ class Log:
 
     def elapsed(self):
         return time.time() - self.t0
+
+    def flush_now(self):
+        """把已经攒下的行立刻打出来。
+
+        长请求（识图 + 长指令）要等好几分钟，全程不吭声会让人以为卡死。
+        开头那几行先打出去，用户能看见在干活。
+        """
+        if self.lines:
+            print("\n".join(self.lines), flush=True)
+            self.lines = []
 
     def flush(self):
         self.lines.append("\u2501" * 44)

@@ -539,7 +539,11 @@ class AIPromptTranslator:
                 + "思考模式：" + 思考模式 + "  运行方式：" + 每次运行
                 + ("  风格方向：" + 风格方向.strip() if 风格方向.strip() else ""))
         if has_image:
-            head += "\n识图：" + str(len(img_b64)) + " 张（" + "，".join(img_info) + "）"
+            # 上传体积要打出来：带图的请求比刷新模型列表大上千倍，
+            # 太大了代理会在读完前掐断连接，看着像网络坏了其实不是。
+            _mb = sum(len(b) for _, b in img_b64) / 1048576.0
+            head += ("\n识图：" + str(len(img_b64)) + " 张（" + "，".join(img_info) + "）"
+                     + "　上传 %.2f MB" % _mb)
         if 自定义指令.strip():
             head += "\n\u26a0 使用了自定义指令（已替换默认指令）"
         log.head(head)
@@ -548,6 +552,7 @@ class AIPromptTranslator:
         log.add("\u2192 组装指令：" + ("自定义" if 自定义指令.strip() else actual_mode)
                 + ("（JSON 双语输出）" if use_json else "") + "，共 " + str(len(system)) + " 字")
         log.detail("系统指令全文", system)
+        log.flush_now()
 
         # ── 调用（含重试）────────────────────────────────────────────────────────
         last_err = None

@@ -7,10 +7,12 @@ const TRANSLATOR_TYPES = ["AIPromptTranslator", "AIPromptTranslatorCLIP", "Video
 // 需要动态图像输入口的节点，以及各自的输入口前缀和上限
 //   翻译节点：图像1..图像10
 //   视频节点：参考图1..参考图9（全参考模式，官方上限 9 张；首帧/尾帧是固定口，不参与）
+// ⚠ 视频节点【不要】放进来。它的参考图走 ComfyUI 官方的 io.Autogrow（V3 schema），
+//    动态增减由前端原生处理，和官方 MiniMaxH3ReferenceToVideo 同一套机制。
+//    自己用 addInput() 模仿会触发按内容重排，把节点撑高——试过三版都治不好。
 const DYNAMIC_IMG_TYPES = {
-  AIPromptTranslator:     { prefix: "图像",   max: 10 },
-  AIPromptTranslatorCLIP: { prefix: "图像",   max: 10 },
-  VideoPromptWriter:      { prefix: "参考图", max: 9  },
+  AIPromptTranslator:     { prefix: "图像", max: 10 },
+  AIPromptTranslatorCLIP: { prefix: "图像", max: 10 },
 };
 
 // 记录鼠标位置，用于弹出模型列表的定位
@@ -95,41 +97,20 @@ function showModelPicker(models, current, onPick) {
 }
 
 // ─── 动态图像输入口：接一个出现下一个，最多 10 个 ─────────────────────────────────
-const imgRe = (prefix) => new RegExp("^" + prefix + "(\\d+)$");
-// 每个节点的初始宽度。视频节点参数多，给宽一点，这样同样的内容更矮
-const NODE_WIDTH = {
-  AIPromptTranslator:     460,
-  AIPromptTranslatorCLIP: 460,
-  VideoPromptWriter:      560,
+// 新拖出来的节点给个像样的初始尺寸。
+// ⚠ 只能在 onNodeCreated 里【同步】设一次。时序是：
+//     节点创建 → onNodeCreated（设这里的值）→ ComfyUI 恢复工作流里存的尺寸
+//   同步设的会被后面的恢复覆盖掉，这正是我们要的；
+//   但凡用 setTimeout / requestAnimationFrame 延迟设，就排到恢复之后了，
+//   结果是用户拖好的尺寸每次切换工作流都被打回去。别再加延迟。
+const NODE_SIZE = {
+  AIPromptTranslator:     [460, 520],
+  AIPromptTranslatorCLIP: [460, 540],
+  VideoPromptWriter:      [560, 640],
 };
-const DEFAULT_WIDTH = 460;
-// 节点刚拖出来时的初始高度（像素）。不写就按 computeSize 算，
-// 而多行输入框会把那个值撑得很大，节点又细又长。
-const NODE_HEIGHT = {
-  AIPromptTranslator:     520,
-  AIPromptTranslatorCLIP: 540,
-  VideoPromptWriter:      620,
-};
-// 多行文本框的初始高度上限（像素）。节点太长主要就是这些框撑的，
-// 收到两三行即可，用户想写长内容自己拖大节点就行。
-const MULTILINE_INIT_H = 64;
 
-// 把多行输入框的"最小高度"压下来，让 computeSize 算出更矮的节点
-function shrinkMultiline(node) {
-  for (const w of node.widgets || []) {
-    try {
-      const isMulti = w?.options?.multiline || w?.type === "customtext";
-      if (!isMulti || w.__cnShrunk || typeof w.computeSize !== "function") continue;
-      const orig = w.computeSize.bind(w);
-      w.computeSize = function (width) {
-        const r = orig(width);
-        if (!Array.isArray(r)) return r;
-        return [r[0], Math.min(r[1], MULTILINE_INIT_H)];
-      };
-      w.__cnShrunk = true;
-    } catch (e) { /* 前端版本差异时静默跳过，不影响节点可用 */ }
-  }
-}
+const imgRe = (prefix) => new RegExp("^" + prefix + "(\\d+)$");
+
 
 function imgNum(inp, re) {
   if (!inp || inp.widget || typeof inp.name !== "string") return 0;
@@ -164,27 +145,13 @@ function syncImageInputs(node, cfg) {
   } finally {
     node.__cnSyncing = false;
   }
-  // 高度收紧到刚好容纳内容，宽度保持
-  const min = node.computeSize?.();
-  if (min) node.setSize?.([Math.max(node.size[0], min[0]), min[1]]);
+  // ⚠ 这个函数里【不要】动节点尺寸。刷新页面、切换工作流、增减输入口都会走到这里，
+  //    任何 setSize / computeSize 重算都会把用户拖好的大小打回去。只重绘。
   node.setDirtyCanvas?.(true, true);
   app.graph?.setDirtyCanvas?.(true, true);
 }
 
-// 把多行输入框的 DOM 高度压到两三行（新版 Vue 渲染走这条路）
-function compactTextareas(node) {
-  setTimeout(() => {
-    for (const w of node.widgets || []) {
-      try {
-        const el = w?.element || w?.inputEl;
-        if (!el || el.tagName !== "TEXTAREA" || el.__cnCompact) continue;
-        el.style.minHeight = MULTILINE_INIT_H + "px";
-        el.rows = 2;
-        el.__cnCompact = true;
-      } catch (e) { /* 前端版本差异时跳过 */ }
-    }
-  }, 0);
-}
+
 
 // ─── 注册扩展 ────────────────────────────────────────────────────────────────────
 app.registerExtension({
@@ -251,16 +218,10 @@ app.registerExtension({
         node.widgets.splice(bIdx, 1);
         node.widgets.splice(pIdx + 1, 0, btn);
       }
-      // 默认更宽、更矮：收起多余图像口 → 压扁多行框 → 按内容定高度
       if (DYNAMIC_IMG_TYPES[nodeData.name]) syncImageInputs(node, DYNAMIC_IMG_TYPES[nodeData.name]);
-      shrinkMultiline(node);
-      const wantW = NODE_WIDTH[nodeData.name] ?? DEFAULT_WIDTH;
-      const wantH = NODE_HEIGHT[nodeData.name];
-      const min = node.computeSize?.() ?? node.size;
-      node.setSize?.([Math.max(wantW, min[0]), wantH ?? min[1]]);
-      // Nodes 2.0 的多行框是 DOM 元素，computeSize 管不到它，
-      // 再直接把 textarea 的最小高度压一下，双保险。
-      compactTextareas(node);
+      // 新节点的初始尺寸：同步设一次，不要延迟（理由见 NODE_SIZE 上方注释）
+      const want = NODE_SIZE[nodeData.name];
+      if (want) node.setSize?.([want[0], want[1]]);
       return result;
     };
 
@@ -296,7 +257,6 @@ app.registerExtension({
         const cfg = DYNAMIC_IMG_TYPES[nodeData.name];
         setTimeout(() => syncImageInputs(self, cfg), 0);
       }
-      shrinkMultiline(self);
       const vals = info?.properties?.cn_values;
       if (vals) {
         for (const w of this.widgets || []) {
