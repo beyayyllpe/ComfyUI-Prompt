@@ -296,7 +296,11 @@ def call_ai(provider_name, model, key, system, user_text, temperature,
     if images:
         user_content = []
         for idx, b64 in images:
-            if len(images) > 1:
+            # 编号是数字 → 标成「图N（Picture N）」；是文字 → 原样当标签用。
+            # 文字标签用于不占参考图编号的图（比如视频节点的「上一段结尾」）。
+            if isinstance(idx, str):
+                user_content.append({"type": "text", "text": idx + "："})
+            elif len(images) > 1:
                 user_content.append({"type": "text", "text": "图" + str(idx) + "（Picture " + str(idx) + "）："})
             if style == "anthropic":
                 user_content.append({"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": b64}})
@@ -528,10 +532,13 @@ def clean_text(text):
 
 def parse_zh_en(text):
     text = clean_text(text)
-    m = re.search(r"\{.*?\}", text, flags=re.S)
+    # 截到最后一个 }，并允许字符串里出现真换行（strict=False）。
+    # 分条输出时 AI 经常直接写换行而不是 \n，默认的严格解析会失败，
+    # 结果是整段原始 JSON 被当成提示词输出。
+    m = re.search(r"\{.*\}", text, flags=re.S)
     if m:
         try:
-            obj = json.loads(m.group(0))
+            obj = json.loads(m.group(0), strict=False)
             en  = clean_text(str(obj.get("en", "")))
             if en:
                 return clean_text(str(obj.get("zh", ""))), en

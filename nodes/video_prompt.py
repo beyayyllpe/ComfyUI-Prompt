@@ -43,84 +43,79 @@ VIDEO_TEMPLATES = {
 
     # ===== 共用：AI 的职责范围 =====
     "视频_导演守则": (
-        "你是资深影视导演兼提示词工程师，为一个不懂镜头语言的用户写视频提示词。\n"
+        (
+        "你是这部片子的导演兼摄影指导，为一个不懂镜头语言的用户写视频提示词。\n"
+        "用户只负责讲故事，镜头由你来设计。用户没说怎么拍的地方，就是交给你判断的地方。\n"
         "\n"
-        "【你的职责只有三件事】\n"
+        "【你的基本职责】\n"
         "1. 读懂用户给的参考图，如实复述画面里已经存在的东西。\n"
-        "2. 把用户的大白话翻译成专业的拍摄描述"
-        "（\u300c镜头别动\u300d译成 holds a static shot，\u300c跟着她走\u300d译成 tracking shot）。\n"
+        "2. 把用户的大白话翻译成专业的拍摄描述。\n"
         "3. 把用户没提到的格子补齐，按目标模型的官方格式排版输出。\n"
         "\n"
-        "【关于标\u300c你来定\u300d的项目】\n"
-        "拍摄设置里标了\u300c你来定\u300d的，是用户把判断权交给了你。"
-        "这时候你是真的在当导演，不是在填表：\n"
-        "· 先问\u300c这个场景需要吗\u300d，不要问\u300c这样会不会更丰富\u300d。"
-        "需要才给，不需要就不给——克制本身就是专业判断。\n"
-        "· 每一个你决定加上的变化，心里都要能答出\u300c它在为什么服务\u300d。"
-        "答不出来的，就是多余的。\n"
-        "· 变化要有因果：先有事发生，才有人反应。"
-        "表情转变压在触发点后面半拍，光线变化要有光源上的解释，"
-        "切镜头要有换视角的必要。无因无果的变化，一眼就看得出假。\n"
-        "· 拿不准时选少的那个。少一个变化顶多平淡，多一个变化可能让整条片子崩掉。\n"
+        "【设计镜头之前，先读懂这一段】\n"
+        "动笔前先回答这几个问题，答案决定怎么拍：\n"
+        "· 这一段的重点是什么？观众此刻最该看见什么、感受到什么？\n"
+        "· 观众站在哪里？是贴着人物去经历，还是站在旁边看着？\n"
+        "· 观众该知道多少？什么先揭示，什么先瞒着？\n"
+        "· 这一段在整个故事里处在哪个阶段：铺垫、推进、爆发，还是余韵？\n"
+        "· 情绪在往上走、往下走，还是停住了？\n"
         "\n"
-        "【运镜怎么选】标了\u300c你来定\u300d时按这张表对照，从内容推手法：\n"
-        "· 人基本不动、靠表情和细微动作传情绪 → 固定机位。"
-        "镜头一动就抢戏，观众注意力会从脸上被拉走。\n"
-        "· 人在走、跑、移动 → Tracking Shot 跟随，保持她在画面里的相对位置。\n"
-        "· 要从环境切进人物内心 → Push In 推近。越近越私密，这是\u300c进入\u300d的语法。\n"
-        "· 要从人物退回她的处境 → Pull Back 拉远，交代她身处什么境地。\n"
-        "· 要看清空间的立体关系，或制造不安 → Arc Shot 环绕。\n"
-        "· 突然的发现、惊吓 → 快速 Push In，模拟瞳孔收缩那一下。\n"
+        "【用户只说了做什么、没说具体是哪一种时】\n"
+        "比如只说「跳舞」没说跳什么舞，只说「打球」没说打什么球，只说「弹琴」没说弹什么乐器。\n"
+        "· 你必须先定一个具体的类型（爵士、芭蕾、拉丁、古典舞……），再按这个类型的动作语汇写具体动作。动作要和类型对得上，不要把几个类型的动作拼在一起。\n"
+        "· 定类型要有依据：参考图里的穿着、所在的场景、用户想表达的气质。\n"
+        "· 不要用宽泛到等于没说的叫法，比如「一段舞蹈」「现代舞」这种范围很大的统称，视频模型拿到等于自由发挥。\n"
+        "· 你定的类型必须在中文说明的「我替你补了什么」里单列一条，写清选了什么、为什么。\n"
         "\n"
-        "⚠ 压在这张表之上的一条铁律：【默认不动，运动是要挣来的】。\n"
-        "  专业片子里大量镜头本来就是固定的，动起来的是少数。"
-        "而且对视频模型来说，人在动、镜头也在动，两套位移叠加，"
-        "是画面崩坏和人物漂移的主要来源。\n"
-        "  每一个你决定动起来的镜头，都要能答出\u300c不动会少掉什么\u300d。"
-        "答不出来就别动。\n"
+        "【你手里的工具，每件对观众起什么作用】\n"
+        "这里写的是工具的作用，【不是规定什么时候用】。同一个瞬间往往有好几种拍法，每种拍法讲的东西都不一样，没有哪种情绪必须配哪种镜头。\n"
+        "· 距离：越近，观众越贴近人物内心；越远，越像旁观，也越能看清人物的处境。\n"
+        "· 高度：仰拍让人物有压迫感、有力量；俯拍让人物显得渺小、被困住；平视最中立。\n"
+        "· 稳与晃：稳，观众觉得一切在掌控中；晃，观众会不安、会紧张。\n"
+        "· 动与不动：镜头动起来，观众的注意力会跟着走；镜头不动，观众只能盯着画面里的事。不动也是一种选择，跟动一样要有理由。\n"
+        "· 运动方向：靠近是进入，远离是退出；跟在后面是追随，走在前面是引领；绕着走是审视。\n"
+        "· 速度：运镜的速度就是情绪的速度。\n"
+        "· 切与不切：切镜头等于给观众新信息；不切，观众就逃不开，得陪人物把时间一秒一秒过完。\n"
+        "· 景深：清楚的地方就是你让观众看的地方。焦点从一处移到另一处，等于替观众转了头。\n"
+        "· 位置与留白：人物在画面里放在哪、身边空出多少，本身就在讲人物和环境的关系。\n"
+        "· 光：可以配合情绪变化，但光变本身必须有物理来源（开灯关灯、车灯扫过、云遮太阳、人走进或走出阴影、火光、闪电、屏幕的光打在脸上）。不能因为她伤心了就把光调暗。找不到来源就全程不变。\n"
+        "这些不是全部。你知道的任何电影手法都可以用，前提是你清楚它在这一刻起什么作用。\n"
         "\n"
-        "【光什么时候该变】标了\u300c你来定\u300d时，唯一的判断标准是"
-        "【这个变化在物理上说得通吗】：\n"
-        "· 说得通的：开灯关灯、车灯／警灯扫过、云遮住太阳、人走进或走出阴影、"
-        "火光、闪电、屏幕或手机的光打在脸上。\n"
-        "· 说不通的：\u300c情绪到了所以光变暖\u300d\u300c为了更有电影感\u300d、"
-        "没有任何光源地凭空换色。\n"
-        "  情绪转折可以【配合】光变，但光变本身必须有物理来源 —— "
-        "不能因为她伤心了就把光调暗。\n"
-        "  找不到来源就全程不变，这不是偷懒，是对的。\n"
+        "【怎么设计】\n"
+        "1. 先在心里想两三种拍法，比较每种会把重点放在哪里。\n"
+        "2. 选最能说清这一刻的那一种。判断标准不是哪种更炫、也不是哪种更省事，而是哪种最贴合你在上一步读出来的东西。\n"
+        "3. 跟前后形成节奏。上一个镜头很动，这一个可以静；上一个是远景，这一个可以给近。每个镜头都一样的景别、一样的运动，整段就是平的。\n"
+        "4. 多个镜头时，镜头之间要连成一句话，不是几张漂亮照片排在一起。每一次切换都要想清楚为什么从这个镜头接到下一个：是先交代了空间才进入人物？是顺着人物的视线看过去？是在动作进行到一半时接过去？每一次切换都要给观众新的东西。\n"
+        "5. 变化要有因果：先有事发生，才有人反应。表情转变压在触发点后面半拍。\n"
+        "\n"
+        "【设计完，再翻译成模型能拍的】\n"
+        "· 设计的时候按电影的思路想，写的时候只能用目标模型「运镜词表」里的说法。\n"
+        "· 技法名称本身不要写进提示词。比如希区柯克变焦，要拆成词表里的动作来写；拆不出来，就换一种能表达同样意思的拍法，不能随便换一个了事。\n"
+        "· 技术上的限制要考虑：人物在大幅运动时，镜头的运动要简单。人在动、镜头也在动，两套位移叠在一起，画面容易崩、人物容易飘。这是模型的限制，不是审美规定。\n"
         "\n"
         "【让画面活起来】\n"
-        "· 写看得见的具体动作，不写笼统状态："
-        "不要写 she dances gracefully，要写重心怎么移、哪只手先抬、裙摆往哪边甩。\n"
-        "· 给身体留呼吸：真人不会一刻不停地动。"
-        "动作之间要有停顿、有重心转移、有一次吸气——这些空隙才让人显得是活的。\n"
-        "· 让环境跟着动：头发、衣料、流苏、耳环会随动作晃，光会落在皮肤和布料上。"
-        "这些次级运动是\u300c真实感\u300d的来源。\n"
-        "· 情绪要落在身体上，不要只写在脸上："
-        "紧张是肩膀收紧，放松是下巴抬起来——这比写 nervous 有用得多。\n"
+        "· 写看得见的具体动作，不写笼统状态：不要写 she dances gracefully，要写重心怎么移、哪只手先抬、裙摆往哪边甩。\n"
+        "· 给身体留呼吸：真人不会一刻不停地动。动作之间要有停顿、有重心转移、有一次吸气——这些空隙才让人显得是活的。\n"
+        "· 让环境跟着动：头发、衣料、流苏、耳环会随动作晃，光会落在皮肤和布料上。这些次级运动是「真实感」的来源。\n"
+        "· 情绪要落在身体上，不要只写在脸上：紧张是肩膀收紧，放松是下巴抬起来——这比写 nervous 有用得多。\n"
         "\n"
         "【不属于你的职责】\n"
-        "· 不要改动\u300c本次拍摄设置\u300d里标【必须】的项，那是用户在节点上定好的。\n"
-        "· 标【必须】的项：没让你切镜头就不许切，没让你动镜头就不许动，"
-        "没让你变光就不许变。\u300c这样更有电影感\u300d不是加东西的理由。\n"
+        "· 不要改动「本次拍摄设置」里标【必须】的项，那是用户在节点上定好的。\n"
+        "· 标【必须】的项：没让你切镜头就不许切，没让你动镜头就不许动，没让你变光就不许变。「这样更有电影感」不是加东西的理由。\n"
         "· 不要用自己的想法替换用户写死的要求。\n"
         "· 不要擅自改动官方格式：字段名、标签、固定措辞一个字都不能变。\n"
         "\n"
         "【写法原则】\n"
         "1. 用户写到的主体、动作、情绪、场景必须全部保留并作为核心。\n"
-        "2. 每一处只给一种明确方案，不要写\u300c或者\u300d\u300c可以是\u300d。\n"
+        "2. 每一处只给一种明确方案，不要写「或者」「可以是」。\n"
         "3. 每一个细节都必须对应画面上看得见、或声音里听得见的东西。\n"
         "4. 用动词不用形容词：写 unfolds、snaps、drifts，不要写 modern、sleek、beautiful。\n"
         "5. 动作要符合物理规律。一个镜头里只安排一个主要动作，多了画面会崩。\n"
         "6. 信息密度比长度重要，不要为了显得详细而灌水。\n"
-        "7. ⚠ 不要用抽象的评价词。cinematic、beautiful、stunning、epic、high quality 这类词"
-        "只能出现在 [Shot 1] 开头的风格声明里（如 Live-action, cinematic, ...），"
-        "正文其余部分一律换成具体的画面和声音细节。\n"
-        "8. ⚠ 正文是逐秒看得见听得见的拍摄描述，不是剧情梗概。"
-        "不要写\u300c她回忆起往事\u300d\u300c两人关系变得紧张\u300d这种镜头拍不出来的东西，"
-        "要写她做了什么动作、脸上什么变化、听见什么声音。\n"
-        "9. ⚠ 用到的每一个引用标签（<Subject N>、<Picture N>、<Video N>、<Audio N>）"
-        "都必须先在定义段里出现过，不许凭空使用没定义的编号。"
+        "7. ⚠ 不要用抽象的评价词。cinematic、beautiful、stunning、epic、high quality 这类词只能出现在 [Shot 1] 开头的风格声明里（如 Live-action, cinematic, ...），正文其余部分一律换成具体的画面和声音细节。\n"
+        "8. ⚠ 正文是逐秒看得见听得见的拍摄描述，不是剧情梗概。不要写「她回忆起往事」「两人关系变得紧张」这种镜头拍不出来的东西，要写她做了什么动作、脸上什么变化、听见什么声音。\n"
+        "9. ⚠ 用到的每一个引用标签（<Subject N>、<Picture N>、<Video N>、<Audio N>）都必须先在定义段里出现过，不许凭空使用没定义的编号。"
+    )
     ),
 
     # ===== 共用：三十格骨架（内部检查清单，不是输出格式）=====
@@ -142,31 +137,30 @@ VIDEO_TEMPLATES = {
 
     # ===== 共用：大白话 → 专业词 =====
     "视频_大白话翻译": (
-        "用户只会用大白话。把他的话翻译成官方词表里的专业表达，"
-        "不要原样照抄，也不要擅自升级成别的意思。常见对照：\n"
-        "· \u300c镜头别动\u300d\u300c不要晃\u300d → the camera holds a static shot\n"
-        "· \u300c慢慢靠近\u300d → the camera pushes in with small amplitude at slow speed\n"
-        "· \u300c快速拉远\u300d → the camera pulls out with large amplitude at fast speed\n"
-        "· \u300c跟着她走\u300d → the camera follows her in a tracking shot\n"
-        "· \u300c绕着拍\u300d → the camera moves around her in an arc shot\n"
-        "· \u300c平移过去\u300d → the camera trucks right\n"
-        "· \u300c镜头转过去看\u300d → the camera pans right\n"
-        "· \u300c从上往下移\u300d → the camera pedestals down\n"
-        "· \u300c抖一下\u300d → the camera shakes slightly\n"
-        "· \u300c她的视角\u300d → a POV shot\n"
-        "· \u300c从背后拍\u300d → framed from behind, her back to the camera\n"
-        "· \u300c只拍脸\u300d → a close-up on her face\n"
-        "· \u300c把全身拍进去\u300d → a wide shot framing her full body\n"
-        "· \u300c背景糊掉\u300d → shallow depth of field, the background falls out of focus\n"
-        "· \u300c显得她很强\u300d → a low-angle shot from below her eye line\n"
-        "· \u300c显得她很小\u300d → a high-angle shot looking down at her\n"
-        "· \u300c昏暗\u300d → low-key lighting with deep shadows from a single source\n"
-        "· \u300c像傍晚\u300d → warm low-angle golden light from the side\n"
-        "· \u300c像老电影\u300d → vintage film style with heavy grain and a muted palette\n"
-        "· \u300c看着镜头\u300d → she looks directly into the lens\n"
-        "遇到对照表里没有的，按同样思路翻译：说清摄影机看到什么，不要保留评价性词汇。"
+        "用户只会用大白话。把他的话翻译成官方词表里的专业表达，不要原样照抄，也不要擅自升级成别的意思。常见对照：\n"
+        "· 「镜头别动」「不要晃」 → the camera holds a static shot\n"
+        "· 「慢慢靠近」 → the camera pushes in with small amplitude at slow speed\n"
+        "· 「快速拉远」 → the camera pulls out with large amplitude at fast speed\n"
+        "· 「跟着她走」 → the camera follows her in a tracking shot\n"
+        "· 「绕着拍」 → the camera moves around her in an arc shot\n"
+        "· 「平移过去」 → the camera trucks right\n"
+        "· 「镜头转过去看」 → the camera pans right\n"
+        "· 「从上往下移」 → the camera pedestals down\n"
+        "· 「抖一下」 → the camera shakes slightly\n"
+        "· 「她的视角」 → a POV shot\n"
+        "· 「从背后拍」 → framed from behind, her back to the camera\n"
+        "· 「只拍脸」 → a close-up on her face\n"
+        "· 「把全身拍进去」 → a wide shot framing her full body\n"
+        "· 「背景糊掉」 → shallow depth of field, the background falls out of focus\n"
+        "· 「显得她很强」 → a low-angle shot from below her eye line\n"
+        "· 「显得她很小」 → a high-angle shot looking down at her\n"
+        "· 「昏暗」 → low-key lighting with deep shadows from a single source\n"
+        "· 「像傍晚」 → warm low-angle golden light from the side\n"
+        "· 「像老电影」 → vintage film style with heavy grain and a muted palette\n"
+        "· 「看着镜头」 → she looks directly into the lens\n"
+        "遇到对照表里没有的，按同样思路翻译：说清摄影机看到什么，不要保留评价性词汇。\n"
+        "⚠ 上面的英文写法只适用于用英文官方词表的模型。目标模型要求用中文书写时，按同样的意思改用本次「运镜词表」里的中文说法。"
     ),
-
     "视频_运镜术语表": (
         "【官方运镜词表】只能用下面这些运动类型，不要自创术语"
         "（dolly、crane、orbit、handheld、rack focus 都不是官方词）：\n"
@@ -334,19 +328,42 @@ VIDEO_TEMPLATES = {
     ),
 
     # ===== 全参考模式：六段结构 =====
+    "视频_锁定设定": (
+        "【锁定设定】用户锁定了下面这些内容，节点会把它们原样放进提示词：\n"
+        "1. subject_definitions 里锁定的那几条照抄即可，节点之后还会原样替换一遍。"
+        "正文、summary、retention_analysis 里继续用同样的标签。"
+        "只有用户这次新接了参考图、需要新的标签时，才另起新编号。\n"
+        "2. detailed_description 里 [Shot 1] 前面的风格句照抄锁定的那一句。\n"
+        "3. 场景和光线以锁定内容为准。正文里写到光线时，不要用比它更强的形容词"
+        "（比如 bright rim light、dramatic、intense、glowing），不要改光的方向和颜色。"
+    ),
+    "视频_接续上一段": (
+        "【接续上一段】本次接入了「上一段结尾」：这是上一段视频实际拍出来的最后一帧。\n"
+        "用户的工作流会把上一段最后一小段画面直接放进本段视频的开头，"
+        "所以本段开头已经定死了，就是这一帧的样子。你的任务是从这里接着拍，不是重新开场。\n"
+        "1. [Shot 1] 必须从这一帧的画面开始写：景别、机位高度和方位、人物在画面里的位置、"
+        "姿势、表情、朝向、光线方向和色调，都要和这一帧一致。先如实写出这个起始状态，再写接下来的动作。\n"
+        "2. 开头 1.5 秒之内不许切镜头，也不要在这段时间里安排剧烈的运镜。第一个切点不能早于 00:01.500。\n"
+        "3. 场景、陈设、光线以这一帧里看到的为准，不要换地点，不要改光的方向和颜色。"
+        "用户明确要求换场景时除外，那也要先从这一帧出发再过渡过去。\n"
+        "4. 动作要接得上：这一帧里人在做什么（停住、转身到一半、手抬着），"
+        "下一刻就从这个状态自然延续，不要凭空跳到另一个姿势。\n"
+        "5. 这张图【只给你看】，不会发给视频模型。提示词里不要把它写成 <Picture N>，"
+        "也不要在 subject_definitions 里给它开条目；参考图的编号照旧。\n"
+        "6. 在中文说明的「我替你补了什么」里单列一条，说明本段是从上一段结尾的什么画面接上的。"
+    ),
     "视频_全参考格式": (
+        (
         "【全参考模式的六段输出结构】按顺序写满六段，段名原样保留，全部用英文：\n"
         "\n"
         "subject_definitions:\n"
-        "  定义每一份后面需要单独追踪的被引用内容，一行一条，说清这个标签指什么、"
-        "担任什么引用角色、要遵循哪些主要特征。四种标签：\n"
+        "  定义每一份后面需要单独追踪的被引用内容，一行一条，说清这个标签指什么、担任什么引用角色、要遵循哪些主要特征。四种标签：\n"
         "  <Subject N> 可复用的可见内容（人、动物、物件、场景、服装、道具、风格、动作、表情、姿势）\n"
         "  <Picture N> 作为具体目标帧或分镜锚点的参考图\n"
         "  <Video N>   提供剪辑源、续写起点或整片时间结构的参考视频\n"
         "  <Audio N>   被复制或被参考的音频\n"
         "  例：<Subject 1> is the young woman in <Picture 1>, with long dark hair and a blue cardigan.\n"
-        "  ⚠ 一张图如果只是用来定义角色／场景／服装／风格，不要单独开 <Picture N> 条目，"
-        "把图源写进对应的 <Subject N> 定义里。\n"
+        "  ⚠ 一张图如果只是用来定义角色／场景／服装／风格，不要单独开 <Picture N> 条目，把图源写进对应的 <Subject N> 定义里。\n"
         "\n"
         "summary:\n"
         "  一小段英文，开头是方括号任务类型前缀，多个类型用 + 连接且不重复。\n"
@@ -364,19 +381,19 @@ VIDEO_TEMPLATES = {
         "  ⚠ 这一段里不要写 (Sx) 说话人 ID。\n"
         "\n"
         "detailed_description:\n"
-        "  正文主体，按播放顺序逐镜头描述画面、动作、镜头、声音、台词，"
-        "并在引用关系生效处插入标签。\n"
+        "  正文主体，按播放顺序逐镜头描述画面、动作、镜头、声音、台词，并在引用关系生效处插入标签。\n"
         "  ⚠ 与其它模式的区别：风格用一到两句英文写在 [Shot 1] 【之前】，不是写在 [Shot 1] 里面。\n"
-        "  重要的 <Subject N> 首次清晰出现时，描述它被引用的特征、在画面里的位置和当前动作；"
-        "后续镜头继续用同一个标签，不要重新定义。\n"
-        "  具体帧锚点用自然措辞：the shot begins from <Picture 1> / "
-        "the shot ends on <Picture 3>。\n"
+        "  这一到两句除了整体风格和画面质感，还要交代【场景】（在哪、主要陈设）和【主光】（方向、色调）。这几样整段视频都不变，写在这里，拍连续故事时下一段可以原样沿用。\n"
+        "  例：Live-action, cinematic, warm golden-hour sunlight with natural film grain, set in a sunlit wooden studio with tall arched windows and hanging macramé, warm light streaming from the left.\n"
+        "  重要的 <Subject N> 首次清晰出现时，描述它被引用的特征、在画面里的位置和当前动作；后续镜头继续用同一个标签，不要重新定义。\n"
+        "  具体帧锚点用自然措辞：the shot begins from <Picture 1> / the shot ends on <Picture 3>。\n"
         "  被引用主体说话时，视觉标签和说话人 ID 都要保留：<Subject 2> (S1) says, <d>...</d>\n"
         "  生成类任务正文通常 350~500 个英文词。\n"
         "\n"
         "overall_soundscape:\n"
         "non_diegetic_music:\n"
         "  规则与其它模式相同。"
+    )
     ),
 
     # ===== 共用：用户钉死的要求 =====
@@ -408,33 +425,36 @@ VIDEO_TEMPLATES = {
 
     # ===== 共用：输出 =====
     "视频_输出要求": (
+        (
         "输出格式：只输出一个 JSON 对象，不要代码块，不要任何额外文字，形如\n"
-        '{"prompt": "给模型的提示词", "zh": "中文对照译文＋决策回执"}\n'
+        "{\"prompt\": \"给模型的提示词\", \"zh\": \"中文对照译文＋决策回执\"}\n"
         "\n"
         "prompt 字段：严格按上面目标模型的官方格式写成的提示词，直接喂给视频模型。\n"
         "段名、标签、固定措辞一个字都不能改，段与段之间空一行。\n"
         "\n"
         "zh 字段必须是【一个字符串】，不是对象、不是数组。\n"
-        "⚠ 下面说的\u300c三部分\u300d指的是这一个字符串【内部】依次写三段，中间空一行分隔。\n"
+        "⚠ 下面说的「三部分」指的是这一个字符串【内部】依次写三段，中间空一行分隔。\n"
         "  不要写成 {\"镜头清单\": ..., \"完整译文\": ...} 这样的嵌套对象。\n"
         "三段依次是：【镜头清单】、【完整译文】、【我替你补了什么】。\n"
         "\n"
-        "第一部分\u300c镜头清单\u300d —— 写在最前面，让用户一眼看完整条片子的节奏。\n"
+        "第一部分「镜头清单」 —— 写在最前面，让用户一眼看完整条片子的节奏。\n"
         "每个镜头一行，严格按这个格式，列对齐：\n"
         "镜头清单\n"
         "[1] 00:00.000-00:02.500  中景·固定机位    她发现画外目标，表情从平静转为警觉\n"
-        "[2] 00:02.500-00:05.000  中全景·固定机位  跳下车，挂回手铐，向前冲刺\n"
+        "\u3000为什么：镜头不动，让观众盯住她的脸，先于动作看到她的警觉\n"
+        "[2] 00:02.500-00:05.000  中全景·跟随      跳下车，挂回手铐，向前冲刺\n"
+        "\u3000为什么：从静到动的反差把节奏推上去，跟随让观众跟着她冲出去\n"
         "规则：\n"
         "· 时间段按你在 prompt 里写的切点算，最后一个镜头到视频结尾。\n"
-        "· 中间一列写\u300c景别·运镜\u300d，用中文，例如 特写·推近、全景·跟随。\n"
+        "· 中间一列写「景别·运镜」，用中文，例如 特写·推近、全景·跟随。\n"
         "· 最后一列用一句话说这一镜发生了什么，不超过 25 个字。\n"
+        "· 每一行下面紧跟一行「\u3000为什么：……」，用一句话说清这个镜头为什么这样拍，不超过 40 个字。要说的是它对观众起什么作用、和上一个镜头是什么关系，例如「\u3000为什么：推近让观众跟着她一起意识到出事了」。不要写「为了更有电影感」「为了画面丰富」这种空话。\n"
         "· 只有一个镜头时也要写这张表，只是只有一行。\n"
         "· 写完空一行，再开始第二部分。\n"
         "\n"
-        "第二部分\u300c完整译文\u300d：把 prompt 字段【完整逐句翻译成中文】，供用户核对。\n"
+        "第二部分「完整译文」：把 prompt 字段【完整逐句翻译成中文】，供用户核对。\n"
         "1. 不要概括、不要摘要、不要省略任何一句，prompt 有几段就有几段，一一对应。\n"
-        "2. 英文字段名和段名、镜头标记 [Shot N]、时间戳、"
-        "以及 <Subject N>、<Picture N>、(S1)、<d>、<scenetrans> 这类标签，一律原样保留不翻译。\n"
+        "2. 英文字段名和段名、镜头标记 [Shot N]、时间戳、以及 <Subject N>、<Picture N>、(S1)、<d>、<scenetrans> 这类标签，一律原样保留不翻译。\n"
         "3. 保持原有的分段和顺序，让用户能左右对照着看。\n"
         "4. 专业术语照常译出，后面紧跟括号用大白话解释效果，例如：\n"
         "   pushes in（镜头缓慢靠近主体，让人注意力集中到她身上）\n"
@@ -442,10 +462,12 @@ VIDEO_TEMPLATES = {
         "   同一个术语只解释一次，后面重复出现时不再加括号。\n"
         "5. <d> 里的台词和画面内文字保留原文，后面括号注明中文意思。\n"
         "\n"
-        "第三部分\u300c我替你补了什么\u300d，前面加一行 \u300c—— 我替你补了什么 ——\u300d，写 3~6 条，每条一行：\n"
+        "第三部分「我替你补了什么」，前面加一行 「—— 我替你补了什么 ——」，写 3~6 条，每条一行：\n"
         "· 用户没说、由你决定的关键格子，各写一条（选了什么、为什么）\n"
+        "· 用户只说了做什么、没说具体类型时（跳什么舞、打什么球、弹什么乐器），你定的类型必须单列一条\n"
         "· 如果用户的要求和参考图冲突、或覆盖了拍摄设置，必须单列一条说明\n"
         "· 不要列用户自己写死的东西，那些不是你补的"
+    )
     ),
 
     # ===== 视频风格预设（下拉框内容由此生成；提炼自 MiniMax 官方风格技能）=====
@@ -616,7 +638,7 @@ VIDEO_TEMPLATES = {
             "全参考格式": True,
         },
         "WAN2.2": {
-            "版本": 3,
+            "版本": 4,
             "语言": "中文",
             "支持声音": False,
             "支持对白": False,
@@ -632,10 +654,26 @@ VIDEO_TEMPLATES = {
                 "5. 动作描述具体到身体部位和幅度，避免\u300c优雅地\u300d这类评价词。\n"
                 "6. 控制在 200 字以内，信息密度比长度重要。"
             ),
+            "运镜词表": (
+                "【运镜词表】WAN2.2 官方公布的运镜术语，用中文写进描述句里，不要自创别的术语：\n"
+                "推镜头／拉镜头 —— 向主体推近，或向后拉开交代环境\n"
+                "镜头左移／镜头右移 —— 摄影机横向移动，扫过一排人物或一片空间\n"
+                "倾斜镜头 —— 画面稍微歪斜\n"
+                "追踪镜头 —— 跟随移动的主体\n"
+                "绕圈镜头 —— 围绕主体旋转\n"
+                "手持镜头 —— 带轻微晃动的真实感\n"
+                "复合运动 —— 以上几种结合，例如边推镜头边绕圈\n"
+                "镜头不动时直接写「镜头固定不动」。\n"
+                "⚠ 这个模型只有一个连续镜头，没有切换。镜头之间怎么衔接的规则用不上，"
+                "把设计放在这一个镜头内部：从什么画面开始、中间怎么运动、停在什么画面上。"
+            ),
+            "运镜对应": {"跟着主体": "追踪镜头", "推近": "推镜头",
+                         "拉远": "拉镜头", "环绕": "绕圈镜头"},
+            "固定写法": "镜头固定不动",
             "全参考格式": False,
         },
         "通用（其它视频模型）": {
-            "版本": 3,
+            "版本": 4,
             "语言": "英文",
             "支持声音": False,
             "支持对白": False,
@@ -650,6 +688,19 @@ VIDEO_TEMPLATES = {
                 "4. 用动词不用形容词，描述摄影机拍得出来的东西。\n"
                 "5. 控制在 150 个英文词以内。"
             ),
+            "运镜词表": (
+                "【运镜写法】目标模型没有指定，没有可以依据的官方词表。"
+                "用最直白的英文动作句写摄影机怎么动，例如 the camera slowly moves closer to her face、"
+                "the camera follows behind her as she walks。"
+                "不要写技法名称（dolly zoom、steadicam 之类），也不要写只有某个模型才认的专有标签。\n"
+                "⚠ 这里只有一个连续镜头，没有切换。把设计放在这一个镜头内部："
+                "从什么画面开始、中间怎么运动、停在什么画面上。"
+            ),
+            "运镜对应": {"跟着主体": "the camera follows the subject",
+                         "推近": "the camera moves closer to the subject",
+                         "拉远": "the camera pulls back from the subject",
+                         "环绕": "the camera circles around the subject"},
+            "固定写法": "the camera stays completely still",
             "全参考格式": False,
         },
     },
@@ -662,9 +713,9 @@ NESTED_KEYS = (MODEL_SPEC_KEY, STYLE_PRESET_KEY)
 # 普通模板的版本号。内容改进后在这里 +1，用户 json 里的旧版本会在重启时自动替换。
 # 没列在这里的模板一旦写进 json 就永远以用户的为准。
 TEMPLATE_VERSIONS = {
-    "视频_导演守则": 6,
+    "视频_导演守则": 8,
     "视频_骨架": 2,
-    "视频_大白话翻译": 2,
+    "视频_大白话翻译": 3,
     "视频_运镜术语表": 3,
     "视频_声景守则": 3,
     "视频_配乐守则": 3,
@@ -676,11 +727,13 @@ TEMPLATE_VERSIONS = {
     "视频模式_首尾帧": 3,
     "视频模式_尾帧": 3,
     "视频模式_参考素材": 5,
-    "视频_全参考格式": 1,
+    "视频_全参考格式": 2,
+    "视频_接续上一段": 1,
+    "视频_锁定设定": 1,
     "视频_锁定要求": 2,
     "视频_负面默认": 3,
     "视频_负面写法": 3,
-    "视频_输出要求": 6,
+    "视频_输出要求": 8,
 }
 VERSION_KEY = "模板版本"
 
@@ -840,7 +893,8 @@ def _parse_prompt_zh(text):
     if not m:
         return text, "", "回复里找不到 JSON 对象"
     try:
-        obj = json.loads(m.group(0))
+        # strict=False：中文说明是多行的，AI 常直接写真换行而不是 \n
+        obj = json.loads(m.group(0), strict=False)
     except Exception as e:
         return text, "", "JSON 解析失败：" + str(e)[:80]
     p = clean_text(str(obj.get("prompt", "")))
@@ -856,6 +910,75 @@ def _parse_prompt_zh(text):
         zh = "\n\n".join(str(v).strip() for v in zh if str(v).strip())
     return p, clean_text(str(zh)), ""
 
+
+
+# ─── 锁定设定 ──────────────────────────────────────────────────────────────────
+# 拍连续故事时，人物定义和 [Shot 1] 前的风格句每段都让 AI 重写一遍，
+# 措辞一变衣服颜色就跟着漂（white → beige → cream）。
+# 锁定以后这两处由代码原样替换，不经过 AI。只对参考图模式（六段格式）有效。
+_LABEL_RE = __import__("re").compile(r"^\s*(<(?:Subject|Picture|Video|Audio)\s*\d+>)")
+
+
+def _label_of(line):
+    import re
+    m = _LABEL_RE.match(line or "")
+    return re.sub(r"\s+", " ", m.group(1)) if m else ""
+
+
+def _parse_lock(text):
+    """把「锁定设定」框里的内容拆成 (定义行列表, 风格句)。
+    允许整段连标题一起粘进来：—— 开头的行、字段名行都会被跳过。"""
+    defs, style = [], []
+    for raw in (text or "").splitlines():
+        ln = raw.strip()
+        if not ln or ln.startswith("—") or ln.startswith("-") and ln.endswith("-"):
+            continue
+        low = ln.lower().rstrip(":：")
+        if low in ("subject_definitions", "detailed_description", "风格", "人物定义"):
+            continue
+        if _label_of(ln):
+            defs.append(ln)
+        else:
+            style.append(ln)
+    return defs, " ".join(style).strip()
+
+
+def _extract_lock(prompt):
+    """从一份参考图模式的提示词里抠出定义行和风格句，拼成可以直接粘回去的锁定设定。"""
+    import re
+    m = re.search(r"subject_definitions:(.*?)\n\s*summary:", prompt or "", re.S)
+    defs = [l.strip() for l in m.group(1).splitlines() if _label_of(l)] if m else []
+    m2 = re.search(r"detailed_description:(.*?)\[Shot\s*1\]", prompt or "", re.S)
+    style = " ".join(l.strip() for l in m2.group(1).splitlines() if l.strip()) if m2 else ""
+    if not defs:
+        return ""
+    return "\n".join(defs + ([style] if style else []))
+
+
+def _apply_lock(prompt, defs, style):
+    """把锁定内容原样替换进提示词。返回 (新提示词, 替换了什么, 没替换成的原因)。
+    锁定的标签用锁定版本；这次 AI 新加的标签（比如新接了一张参考图）保留。"""
+    import re
+    done, fail = [], []
+    if defs:
+        m = re.search(r"(subject_definitions:)(.*?)(\n\s*summary:)", prompt, re.S)
+        if m:
+            locked = {_label_of(d) for d in defs}
+            extra = [l.strip() for l in m.group(2).splitlines()
+                     if _label_of(l) and _label_of(l) not in locked]
+            new = "\n" + "\n".join(defs + extra) + "\n"
+            prompt = prompt[:m.start(2)] + new + prompt[m.end(2):]
+            done.append("人物定义")
+        else:
+            fail.append("找不到 subject_definitions 段")
+    if style:
+        m = re.search(r"(detailed_description:)(.*?)(\[Shot\s*1\])", prompt, re.S)
+        if m:
+            prompt = prompt[:m.start(2)] + "\n" + style + "\n\n" + prompt[m.end(2):]
+            done.append("风格句")
+        else:
+            fail.append("找不到 detailed_description 里 [Shot 1] 前面的位置")
+    return prompt, done, fail
 
 # ─── 节点 ──────────────────────────────────────────────────────────────────────
 class VideoPromptWriter(io.ComfyNode):
@@ -969,6 +1092,22 @@ class VideoPromptWriter(io.ComfyNode):
                                     "编号对应提示词里的 <Picture N>，官方上限 9 张。\n"
                                     "⚠ 不能和首帧图／尾帧图同时使用"),
                         names=["参考图" + str(i) for i in range(1, 10)], min=0)),
+                io.Image.Input(
+                    "上一段结尾", optional=True,
+                    tooltip="拍连续的下一段时，接上一段视频的最后一帧。\n"
+                            "这张图【只给写提示词的 AI 看】，不会发给视频模型，也不占参考图编号。\n"
+                            "AI 会从这个画面开始写本段的第一个镜头，开头 1.5 秒内不切镜头，"
+                            "保证和你插进潜空间开头的那几帧对得上。\n"
+                            "可以和参考图一起用；不能和首帧图一起用（首帧图本身就是开头）。"),
+                io.String.Input(
+                    "锁定设定", multiline=True, default="", optional=True,
+                    placeholder="拍连续故事时用。第一段跑完，把中文说明最后的「锁定设定」整段复制进来，"
+                                "后面每段都会原样沿用。开新故事时清空。",
+                    tooltip="人物定义和 [Shot 1] 前面的风格句（含场景和光线），由节点【原样】放进提示词，"
+                            "不经过 AI，所以每一段一字不差，衣服颜色不会一段段漂掉。\n"
+                            "只对参考图模式有效。\n"
+                            "第一段框空着运行，中文说明最后会给出现成的一段，复制进来即可。\n"
+                            "中途换装：换好参考图，清空这个框跑一段，再把新生成的那段粘回来。"),
 
                 # ── 你想要什么，一个框写完 ──
                 io.String.Input(
@@ -1094,13 +1233,12 @@ class VideoPromptWriter(io.ComfyNode):
 
         # ── 分镜 ──
         if shot_n == 0 and multi:
-            lines.append("· 分镜【你来定】：几个镜头你自己定。"
-                         "唯一的判断标准是【有没有必要换视角】——"
-                         "要看清一个表情、要交代一个新的空间关系、要把节奏推上去，"
-                         "这些才值得切一刀；为了「不单调」而切是最糟的理由。\n"
+            lines.append("· 分镜【你来定】：几个镜头由你对这一段的设计决定。"
+                         "每一次切换都要给观众新的东西（新的表情、新的空间关系、新的视角、新的时间），"
+                         "为了「不单调」而切是最糟的理由；一镜到底也是一种设计，同样要有理由。\n"
                          "  官方还有一条：如果只是远近或者角度略微变一下，"
                          "【用运镜，不要切镜头】。\n"
-                         "  不确定就 1 镜到底。每个镜头至少 2 秒，"
+                         "  每个镜头至少 2 秒，"
                          + str(时长) + " 秒最多排 " + str(max(1, int(时长) // 2)) + " 个。")
         elif not multi or shot_n <= 1:
             lines.append("· 分镜【必须】：只有 [Shot 1] 一个连续镜头，全程不许切，"
@@ -1113,30 +1251,34 @@ class VideoPromptWriter(io.ComfyNode):
         # ── 运镜 ──
         n_for_move = shot_n if shot_n > 0 else 0
         if 运镜 == "交给AI":
-            base = ("· 运镜【你来定】：按导演守则里的「运镜怎么选」逐条对照，"
-                    "从内容推出手法。记住默认是固定机位，运动要挣来。")
+            base = ("· 运镜【你来定】：按导演守则先读懂这一段，再设计拍法。"
+                    "动和不动都是选择，都要说得出理由。")
             if n_for_move != 1:
-                base += ("\n  多镜头时【逐镜决定】，不要全片一个动作："
-                         "静止抒情的镜头就固定，人在移动的镜头才跟随。"
-                         "一条片子里动起来的镜头应该是少数。")
+                base += ("\n  多镜头时【逐镜设计】，不要全片一个动作，"
+                         "镜头之间要形成节奏。")
             lines.append(base)
         elif 运镜 == "镜头不动":
+            still = spec.get("固定写法") or "the camera holds a static shot"
             lines.append("· 运镜【必须】：全片固定机位。每个镜头正文里都要写出一句 "
-                         "the camera holds a static shot，不许有任何镜头运动。")
+                         + still + "，不许有任何镜头运动。")
         else:
-            word = MOVE_WORD[运镜]
-            lines.append("· 运镜【必须】：用户指定了「" + 运镜 + "」，"
-                         "对应官方词表里的 " + word + "。\n"
-                         "  这是全片的基调：在最适合它的那个镜头上用。\n"
-                         "  写法＝运动类型（+ 幅度 + 速度）。幅度和速度【只在有意义时才加】，"
-                         "中等幅度和正常速度按官方规定省略不写。"
-                         "一个镜头里只用一种运动。\n"
-                         "  其余镜头如果内容不需要运动，就写 the camera holds a static shot，"
-                         "不要为了统一而每镜都动。")
+            own = spec.get("运镜对应") or {}
+            if own.get(运镜):
+                lines.append("· 运镜【必须】：用户指定了「" + 运镜 + "」，"
+                             "写成「" + own[运镜] + "」。")
+            else:
+                word = MOVE_WORD[运镜]
+                lines.append("· 运镜【必须】：用户指定了「" + 运镜 + "」，"
+                             "对应官方词表里的 " + word + "。\n"
+                             "  这是全片的基调：在最适合它的那个镜头上用。\n"
+                             "  写法＝运动类型（+ 幅度 + 速度）。幅度和速度【只在有意义时才加】，"
+                             "中等幅度和正常速度按官方规定省略不写。"
+                             "一个镜头里只用一种运动。\n"
+                             "  其余镜头按导演守则自己设计，不要为了统一而每镜都动。")
 
         # ── 光线 ──
         if 光线 == "交给AI":
-            lines.append("· 光线【你来定】：按导演守则里的「光什么时候该变」判断。"
+            lines.append("· 光线【你来定】：按导演守则里「光」那一条判断。"
                          "光变必须有光源上的解释，找不到解释就全程不变，"
                          "在 Light 相关描述结尾写 unchanged throughout。")
         elif 光线 == "保持不变":
@@ -1221,7 +1363,7 @@ class VideoPromptWriter(io.ComfyNode):
                 parts.append(tpl["视频_骨架"])
 
             parts.append(tpl["视频_大白话翻译"])
-            parts.append(tpl["视频_运镜术语表"])
+            parts.append(spec.get("运镜词表") or tpl["视频_运镜术语表"])
             parts.append(tpl.get("视频模式_" + mode_key, ""))
 
             if align:
@@ -1263,7 +1405,7 @@ class VideoPromptWriter(io.ComfyNode):
     @classmethod
     def execute(cls, 你的想法, 目标模型, 视频时长, 分镜, 运镜, 光线, 表情, 声音,
             风格预设, 服务商, 模型, 创意度, 每次运行,
-            首帧图=None, 尾帧图=None, 参考图=None,
+            首帧图=None, 尾帧图=None, 参考图=None, 上一段结尾=None, 锁定设定="",
             我的具体要求="", 台词="", 不要出现的东西="",
             思考模式="关闭", API密钥="", 代理地址="", 详细日志="关闭"):
 
@@ -1318,7 +1460,18 @@ class VideoPromptWriter(io.ComfyNode):
         else:
             images = []
             mode_key, mode_name = "文生视频", "文生视频"
-        has_image = bool(images)
+        prev = 上一段结尾
+        if prev is not None and 首帧图 is not None:
+            msg = ("「上一段结尾」不能和「首帧图」同时使用。\n"
+                   "首帧图本身就是本段的开头；要接续上一段，就把上一段的最后一帧接到「上一段结尾」，"
+                   "首帧图断开。")
+            write_error_log(msg)
+            raise RuntimeError(msg)
+        has_image = bool(images) or prev is not None
+
+        lock_text = (锁定设定 or "").strip()
+        lock_defs, lock_style = _parse_lock(lock_text)
+        use_lock = bool(lock_defs or lock_style) and mode_key == "参考素材" and 每次运行 != "直通"
 
         # 直通：不调 AI，把「你的想法」原样当提示词输出，只做格式自检。
         # 用于手改提示词后重跑、或复用之前写好的一条，不花调用次数。
@@ -1360,6 +1513,11 @@ class VideoPromptWriter(io.ComfyNode):
             else:
                 label = "首帧" if idx == 1 else "尾帧"
             img_info.append(label + " " + str(o[0]) + "×" + str(o[1])
+                            + ("" if o == n else "→" + str(n[0]) + "×" + str(n[1])))
+        if prev is not None and not 直通:
+            b64, o, n = img_to_b64(prev)
+            img_b64.append(("上一段结尾（只给你看，不是参考图，不要写成 <Picture N>）", b64))
+            img_info.append("上一段结尾 " + str(o[0]) + "×" + str(o[1])
                             + ("" if o == n else "→" + str(n[0]) + "×" + str(n[1])))
         # 请求体大小要打出来。图片走 base64，体积直接决定这次请求能不能走通代理：
         # 太大了对端会在读完之前就掐断连接（RemoteDisconnected / SSL EOF），
@@ -1438,6 +1596,12 @@ class VideoPromptWriter(io.ComfyNode):
             bool(lines_txt), neg_text, bool(ref_imgs),
             声音, style_lock, align_later,
         )
+        if prev is not None:
+            system += "\n\n" + tpl.get("视频_接续上一段", VIDEO_TEMPLATES["视频_接续上一段"])
+        if use_lock:
+            system += ("\n\n" + tpl.get("视频_锁定设定", VIDEO_TEMPLATES["视频_锁定设定"])
+                       + "\n\n锁定内容：\n" + "\n".join(lock_defs)
+                       + ("\n" + lock_style if lock_style else ""))
         if 每次运行 == "随机":
             system += ("\n\n补充：请给出与上次不同的具体方案，紧扣用户原意和上面的拍摄设置，"
                        "但在景别、构图、光线方向、环境细节上换一种处理方式。")
@@ -1461,6 +1625,9 @@ class VideoPromptWriter(io.ComfyNode):
                               "⚠ 如果你实际上看不到这些图片，不要凭空编造外貌、服装或场景，"
                               "直接只回复一行 IMAGES_NOT_VISIBLE 然后停止。"
                               "编造的描述会让用户白跑一次视频生成，比报错严重得多。")
+        if prev is not None:
+            user_parts.append("另外接入了一张「上一段结尾」，是上一段视频实际的最后一帧。"
+                              "本段从这个画面接着拍，按系统指令里「接续上一段」的规则写。")
         if neg_text:
             user_parts.append("不希望出现的内容：\n" + neg_text)
         user_msg = "\n\n".join(user_parts)
@@ -1486,6 +1653,8 @@ class VideoPromptWriter(io.ComfyNode):
             extras.append("台词（用户写的）" if lines_txt else "台词（AI判断）")
         if extra_neg:
             extras.append("追加负面")
+        if use_lock:
+            extras.append("锁定设定")
         if extras:
             head += "\n启用：" + "、".join(extras)
         if has_image and 直通:
@@ -1661,6 +1830,14 @@ class VideoPromptWriter(io.ComfyNode):
             shot_n = _last          # 让后面的自检按实际镜头数来，不再误报
             log.add("→ 已补上官方对齐指令（AI 定了 " + str(_last) + " 个镜头）")
 
+        lock_done, lock_fail = [], []
+        if use_lock and prompt:
+            prompt, lock_done, lock_fail = _apply_lock(prompt, lock_defs, lock_style)
+            if lock_done:
+                log.add("→ 已按锁定设定原样替换：" + "、".join(lock_done))
+            for f in lock_fail:
+                log.warn("锁定设定没替换上：" + f)
+
         直通问题 = []
 
         # 事后自检。发现【硬错误】（镜头数不符）时自己补跑一次 ——
@@ -1728,6 +1905,8 @@ class VideoPromptWriter(io.ComfyNode):
                                               (img_b64 or None), 思考模式 == "开启",
                                               log, timeout_s)
                 p2, z2, e2 = _parse_prompt_zh(raw2)
+                if use_lock and p2:
+                    p2, _, _ = _apply_lock(p2, lock_defs, lock_style)
                 if not e2 and not _selfcheck(p2):
                     prompt, zh, usage = p2, z2, (usage2 or usage)
                     log.add("✓ 重跑后镜头数正确")
@@ -1739,6 +1918,21 @@ class VideoPromptWriter(io.ComfyNode):
 
         # 节点自己算出来的提醒，附到中文说明末尾 —— 用户只看输出不看日志时也能看到
         notes = list(warns)
+        if mode_key == "参考素材" and not 直通 and prompt:
+            if use_lock:
+                if lock_done:
+                    notes.append("已按「锁定设定」原样替换了" + "、".join(lock_done)
+                                 + "。上面完整译文里这两处是 AI 原来写的，以提示词里的锁定版本为准。")
+                for f in lock_fail:
+                    notes.append("锁定设定没替换上：" + f + "。这一段的人物定义和风格句是 AI 自己写的。")
+            else:
+                blk = _extract_lock(prompt)
+                if blk:
+                    zh = (zh + "\n\n" if zh else "") + (
+                        "—— 锁定设定（拍连续故事时，复制到「锁定设定」框，后面每段都会原样沿用）——\n"
+                        + blk)
+        elif lock_text and mode_key != "参考素材":
+            notes.append("「锁定设定」只对参考图模式有效，这次是" + mode_name + "，没有用上。")
         if 直通:
             if 直通问题:
                 notes = ["【直通自检】" + x for x in 直通问题] + notes

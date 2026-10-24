@@ -51,98 +51,367 @@ DEFAULT_TEMPLATES = {
         "你是资深 AI 绘画提示词设计师，将简短描述扩写成画面完整的提示词。\n"
         "扩写原则：\n"
         "1. 紧扣用户原意，不替换或弱化用户写到的内容。\n"
-        "2. 把抽象词转成具体视觉细节（服装款式、光线方向、镜头焦段等）。\n"
+        "2. 把抽象词转成具体视觉细节 —— \u300c高级感\u300d要落成具体的材质、光线和构图，不能原样搬进提示词。\n"
         "3. 只补用户没有指定的维度，给出一种最协调的具体设定。\n"
         "4. 全篇只有一种明确的视觉风格。\n"
-        "5. 按顺序：主体→外貌→服装→动作→场景→光线→镜头→风格与质感。"
+        "5. 按下面【画面维度】的五层来组织，不要套固定顺序 —— 主体是建筑或静物时，\u300c外貌服装\u300d这类人物专用的维度根本不适用。\n"
+        "6. 颜色一律带修饰语，不要写裸色名：深藏青、灰蓝、米白、暖陶土色、"
+        "黯橄榄绿，而不是只写\u300c蓝\u300d\u300c绿\u300d。\n"
+        "7. 写材质不只写东西名：拉丝金属、哑光塑料、粗麻、磨砂玻璃、做旧木头，"
+        "让模型知道表面长什么样。\n"
+        "8. 人物年龄写人生阶段，不写具体岁数：孩童、少年、二十出头、三十多岁、"
+        "中年、年长。具体数字对画面没有意义。\n"
+        "9. 画面要在物理上立得住：影子背着光源走，反射要和面前的东西对得上，"
+        "相邻物体的大小比例要合理，放东西的表面要有相应的反应。\n"
+        "⚠ 画面里本来没有文字时，不要凭空加招牌、标语、字幕。"
+        "很多画面根本没有可读文字，硬加是错的；只有用户要求写字时才写。"
     ),
-    "篇幅_简洁": "篇幅：中文控制在 40~60 字左右，只补最关键的细节。",
-    "篇幅_适中": "篇幅：中文控制在 80~120 字左右。",
-    "篇幅_详细": "篇幅：中文控制在 150~220 字左右，细节完整但不啰嗦。",
-    "输出_中文": "输出：中文自然语言，逗号连接短句。",
-    "输出_英文句子": "英文版要求：把中文扩写结果转成流畅具体的英文自然语言描述（3~5 句），保留全部视觉细节，不要逐字硬译。",
-    "输出_英文标签": "英文版要求：把中文扩写结果转成 SDXL 习惯的英文标签，短语用逗号分隔，每个短语 1~4 个词，使用 SD 社区通用标签，总长度 40~80 词。",
+    "画面维度": (
+        "【开头第一句：20~30 字内回答四件事】\n"
+        "  1 这是什么图 —— 媒介和风格（照片 / 插画 / 渲染 / 水彩 / 海报）\n"
+        "  2 画的是什么 —— 主体。【可数的主体，数量必须明确】：多个时写明几个\n"
+        "  3 在哪 —— 环境\n"
+        "  4 处于什么状态 —— 有生命的写动作，无生命的写状态或关系"
+        "（立着 / 摞着 / 倒扣着 / 正在冒热气 / 半塌着）\n"
+        "  例：写实人像摄影，一位年轻女性在霓虹灯下的雨后街头独舞，冷调夜色。\n"
+        "  例：建筑摄影，一座清水混凝土美术馆立在缓坡草地上，黄昏逆光。\n"
+        "  例：静物摄影，三只手工陶杯摞在深色木桌上，侧窗光。\n"
+        "  ⚠ 主体出现得越晚，模型抓住它的可能性越低 —— "
+        "【不要先用一整段讲相机参数，再提画面里有什么】。\n"
+        "\n"
+        "【然后按五层展开细节】\n"
+        "\n"
+        "⚠ 下面每一项列的词都是【常见示例，不是选项菜单】。"
+        "碰到更合适的说法就用更合适的，不要被这些词框住。\n"
+        "⚠ 但不管用什么词，都要【具体到可验证】："
+        "焦段给数字、光圈给 f 值、光线给方向和色温，"
+        "不许写\u300c合适的焦段\u300d\u300c良好的光线\u300d这类废话。\n"
+        "\n"
+        "第一层 · 拍摄 —— 这张图是怎么被拍下来的\n"
+        "  媒介：数码、135 胶片、中画幅、手机、拍立得、CG 渲染、插画、水彩……\n"
+        "  景别：大特写 / 特写 / 近景 / 半身 / 全身 / 中景 / 全景 / 远景……\n"
+        "  机位：高度（仰拍、平视、略俯、俯拍、顶拍）＋ 方位（正面、四分之三侧、正侧、背侧）\n"
+        "  焦段：给具体数值和它带来的画面特征 —— 24mm 透视夸张空间开阔、"
+        "50mm 接近人眼、85mm 压缩背景面部自然、135mm 强压缩。"
+        "鱼眼、微距、移轴、超长焦同样可用\n"
+        "  光圈景深：⚠ 写【效果】不写器材参数 —— 模型认得\u300c浅景深、背景柔化、bokeh\u300d，"
+        "不认得 f/2.8 这串字符。要写也是效果在前、f 值最多作为补充\n"
+        "  快门与运动：同理，写\u300c动作被定格、发丝清晰不拖影\u300d或\u300c运动模糊\u300d，"
+        "不写\u300c1/1000 秒\u300d\n"
+        "  构图：三分法、中心对称、负空间、引导线、框架式、对角线……\n"
+        "    ⚠ 构图法的【名称】模型执行得很不可靠。真想控制构图，"
+        "直接描述物体在画面里的位置关系，比写术语名有用得多\n"
+        "  ⚠ 画幅（横构图 / 竖构图）由生成节点的宽高决定，【写进提示词基本没用】，不要占字数\n"
+        "\n"
+        "第二层 · 主体 —— 先判断主体是哪一类，【只走那一类该写的维度】，"
+        "不适用的跳过，不要硬套\n"
+        "  人物：年龄阶段·体型·族裔特征 → 五官·发型·妆容 → "
+        "服装（款式·材质·颜色·纹样·新旧）·配饰 → "
+        "姿态（身体朝向·重心·手部·头部角度）→ 表情·视线方向 → "
+        "【用具体动词写动作】，不写\u300c优雅地\u300d\u300c性感地\u300d这类评价词 → 持物与交互\n"
+        "  动物：物种品种 → 体型比例 → 毛羽鳞的质感·花纹·颜色 → "
+        "姿态 → 头部朝向·眼睛·耳朵位置（这是动物的表情）→ "
+        "动态细节（肌肉紧张、毛发飘动）→ 与环境的交互\n"
+        "  建筑：类型与功能 → 年代与流派 → 体量几何（层数·比例·对称性）→ "
+        "材料与表面（清水混凝土、红砖、玻璃幕墙、木构、石材）＋新旧风化 → "
+        "结构元素（柱·拱·屋顶形式·开窗节奏）→ 细部装饰 → "
+        "【尺度参照】（有没有人或车给出大小感）→ 与地形周边的关系\n"
+        "  静物与产品：形状·尺寸·材质·表面处理（拉丝·磨砂·抛光）→ "
+        "摆放与堆叠关系 → 承托面材质 → 道具陪衬 → 反射与投影\n"
+        "  食物：以上加熟度·质地（酥脆·多汁·绵密）·热气·酱汁流动·新鲜度·切面\n"
+        "  载具：车型年代 → 车身线条比例 → 漆面状态（新·氧化·泥污）→ "
+        "轮毂·格栅·灯组细部 → 静止还是运动（轮子虚化、扬尘）\n"
+        "  风景：地貌 → 植被 → 水体状态 → 天空与云 → 季节 → 前中后景的层次\n"
+        "  群像：人数 → 主次关系 → 站位与间距 → 彼此之间在干什么\n"
+        "  抽象图形：形状语言 → 配色方案 → 构成方式 → 质感（平涂·渐变·颗粒）\n"
+        "\n"
+        "  ★ 画面里有多个同类主体时（几个人、几只杯子、一排建筑），"
+        "按这四条写，否则属性会串到一起、最后糊成一个：\n"
+        "    (1) 【每个主体独立成句】，以锚点开头："
+        "从左到右 —— 左一……；左二……；右二……；右一……\n"
+        "    (2) 【一个主体的属性必须连续写完】，"
+        "中间不许插入别人的信息，写完一个再写下一个\n"
+        "    (3) 【锚点在块内至少重复一次】："
+        "\u300c左一梳黑色长直发，左一身穿炭黑漆皮挂脖背心，左一正单手叉腰\u300d —— "
+        "重复锚点能显著拉紧绑定\n"
+        "    (4) ⚠ 【不要在分述之前写共有属性】。"
+        "\u300c四人身材都很修长\u300d这种句子悬在\u300c四位\u300d和\u300c左一\u300d之间，"
+        "不属于任何人，是串位的温床 —— 共有属性要么并进各自的块里，要么放到最后统一说\n"
+        "    多主体时【每个主体仍要写满该类型的全部维度】，"
+        "不许因为人多就简写。人多就写长，不要牺牲单个主体的完整度。\n"
+        "\n"
+        "  ⚠ 以上【不是全部类型】。碰到没列到的主体（机械、昆虫、服装平铺、"
+        "界面截图、地图、图表、神话生物……），按同样的思路自己定该写哪些维度："
+        "这个东西的形态、材质、状态、细部，以及它和环境的关系。\n"
+        "\n"
+        "第三层 · 环境 —— 主体之外的空间\n"
+        "  场所类型·室内外 → 时间（时刻·季节·天气）→ 环境陈设与元素 → "
+        "空间分层（前景·中景·远景）→ 与主体的关系（虚化程度、是否呼应主体）\n"
+        "\n"
+        "第四层 · 光线 —— 同时作用于主体和环境，所以单独算一层\n"
+        "  光源类型（自然光·窗光·影棚闪光·实用光源如台灯霓虹屏幕·火光）→ "
+        "方向（顺光·伦勃朗 45°·侧光·侧逆光·逆光轮廓光·顶光·底光）→ "
+        "质感（硬光边缘锐利 / 柔光过渡平滑）→ 光比（高反差 / 平光）→ "
+        "色温（钨丝暖黄 / 中性 / 阴天冷蓝）→ 投影和高光落在哪\n"
+        "\n"
+        "第五层 · 风格与质感\n"
+        "  整体风格 → 色彩处理（胶片色·高对比·低饱和·单色）→ "
+        "画面质感（颗粒·锐度·噪点·笔触）→ 气氛\n"
+    ),
+
+    "篇幅_简洁": (
+        "【本档：简洁】五层都要出现，但每层只取最关键的一两项。\n"
+        "  拍摄：定下景别和机位高度即可，焦段景深可以不写\n"
+        "  主体：该类型最要紧的 2~3 项（人物＝身份·服装主色·在做什么）\n"
+        "  环境：一句话说清在哪\n"
+        "  光线：方向 + 冷暖\n"
+        "  风格：一个词\n"
+        "篇幅（按你最终要输出的格式对号入座）：\n"
+        "  · 中文：60~100 字\n"
+        "  · 英文自然语言：60~90 词\n"
+        "  · 英文标签：25~32 个词\n"
+        "宁可少写也不要含糊 —— 写到的每一项都要具体。"
+    ),
+    "篇幅_适中": (
+        "【本档：适中】五层都要覆盖到主要维度，每项用一两个短语讲清。\n"
+        "  拍摄：景别 + 机位 + 【具体焦段】 + 景深\n"
+        "  主体：该类型的主要维度都写到，每项一两个短语\n"
+        "  环境：场所 + 时间或天气 + 前后景的空间层次\n"
+        "  光线：光源类型 + 方向 + 软硬 + 色温\n"
+        "  风格：整体风格 + 色彩处理\n"
+        "篇幅（按你最终要输出的格式对号入座）：\n"
+        "  · 中文：150~250 字\n"
+        "  · 英文自然语言：160~230 词\n"
+        "  · 英文标签：38~45 个词\n"
+        "每一句都要带新信息，不要把同一件事换个说法再说一遍。"
+    ),
+    "篇幅_详细": (
+        "【本档：详细】五层全部逐项展开，这是信息量最大的一档。\n"
+        "  拍摄：媒介 + 景别 + 机位高度和方位 + 具体焦段及其画面特征 + "
+        "光圈与景深 + 快门或运动表现 + 主体在画面里的【位置和留白】\n"
+        "  主体：该类型的每一个维度都写到，并深入到"
+        "【材质、纹样、新旧状态、细部】这一层\n"
+        "  环境：前景·中景·远景分层交代，陈设要具体到物件\n"
+        "  光线：光源 + 方向 + 软硬 + 光比 + 色温，"
+        "并说明投影和高光【落在哪里】\n"
+        "  风格：整体风格 + 色彩处理 + 画面质感（颗粒·锐度·笔触）+ 气氛\n"
+        "篇幅（按你最终要输出的格式对号入座）：\n"
+        "  · 中文：300~450 字\n"
+        "  · 英文自然语言：300~420 词\n"
+        "  · 英文标签：45~52 个词\n"
+        "⚠ 标签那个数字【不跟着中文一起膨胀】，它受一个硬性的技术上限约束，"
+        "具体原因和取舍办法写在标签格式自己的要求里。\n"
+        "⚠ 篇幅长不等于可以灌水：【每一句都必须带新的视觉信息】。"
+        "换个说法重复同一件事、堆砌没有画面的形容词，都算没写。"
+    ),
+    "输出_中文": (
+        "输出：中文自然语言。颜色带修饰语，材质写明。\n"
+        "【版式看画面结构决定，不要写死】\n"
+        "· 画面是一个完整的场景（绝大多数情况）：写成一整段，用逗号连接短句，不要编号、不要小标题。\n"
+        "· 画面本身由几个独立区域组成（多视图设定图、分格漫画、拼图、前后对比图、信息图、海报里的不同版块）：按区域分条写。\n"
+        "  先用一句话交代整体：画幅比例、有几个区域、怎么排列、统一的背景和光线 —— 这一句代替「开头第一句」。\n"
+        "  然后每个区域单独一条，开头标明位置（最左侧、左二、上方、第三格……），把这个区域里的内容写完整，内部照样按五层和主体类型来写，不要和别的区域混在一起写。\n"
+        "  最后一条写各区域之间必须保持一致的东西（同一个人物、同一套服装、同样的光线和色彩）。\n"
+        "  篇幅数字按整张图算。区域多时可以适当超出，不要为了压字数把某个区域写空。\n"
+        "· 分条只用数字序号和位置标注，不要用 #、**、- 这类 markdown 符号。\n"
+        "· 判断依据是画面本身，不是用户的书写习惯：用户分了条、但描述的其实是一个场景，照样写成一段。"
+    ),
+    "输出_英文句子": (
+        "英文版要求：把中文扩写结果转成流畅具体的英文自然语言描述，总词数按上面的篇幅档来。【句子长短随你，不用凑句数】—— 该用长复合句就用长句，不要为了凑数把一句劈成三句，也不要为了压句数把两件事硬塞进一句。判断标准只有一个：总词数到了，而且每个词都带画面。【保留全部视觉细节】，一个都不要丢，不要逐字硬译。颜色用带修饰语的说法（deep navy / blue-grey / pale cream），材质写明（brushed metal / coarse linen）。\n"
+        "【版式看画面结构决定，不要写死】\n"
+        "· 画面是一个完整的场景（绝大多数情况）：写成一整段，用逗号连接短句，不要编号、不要小标题。\n"
+        "· 画面本身由几个独立区域组成（多视图设定图、分格漫画、拼图、前后对比图、信息图、海报里的不同版块）：按区域分条写。\n"
+        "  先用一句话交代整体：画幅比例、有几个区域、怎么排列、统一的背景和光线 —— 这一句代替「开头第一句」。\n"
+        "  然后每个区域单独一条，开头标明位置（最左侧、左二、上方、第三格……），把这个区域里的内容写完整，内部照样按五层和主体类型来写，不要和别的区域混在一起写。\n"
+        "  最后一条写各区域之间必须保持一致的东西（同一个人物、同一套服装、同样的光线和色彩）。\n"
+        "  篇幅数字按整张图算。区域多时可以适当超出，不要为了压字数把某个区域写空。\n"
+        "· 分条只用数字序号和位置标注，不要用 #、**、- 这类 markdown 符号。\n"
+        "· 判断依据是画面本身，不是用户的书写习惯：用户分了条、但描述的其实是一个场景，照样写成一段。\n"
+        "· 英文版的版式和中文版一致：中文分了条，英文也按同样的区域分条，位置标注译成英文（Far left / Second from left / Top / Panel 3……）。"
+    ),
+    "输出_英文标签": "英文版要求：把中文扩写结果转成 SDXL 习惯的英文标签，短语用逗号分隔，每个短语 1~4 个词，使用 SD 社区通用标签，总长度按上面的篇幅档来。颜色标签带修饰语（deep navy 而不是 blue），材质单独成标签（brushed metal、matte plastic）。\n"
+                          "⚠ 五层里【只取标签体系真有对应词的部分】：景别（close-up / full body）、"
+                          "机位（from below / from above）、景深（depth of field / bokeh）、"
+                          "光线（rim light / backlit / soft lighting / neon lighting）、"
+                          "材质、颜色、风格质感 —— 这些都有社区通用标签。\n"
+                          "【没有通用标签的维度不要硬写成一串词】：光比、投影落在哪、构图法名称、"
+                          "具体 f 值和快门速度，写了也不起作用，只会挤掉有效标签的权重。\n"
+                          "⚠ 可数主体的数量必须写明。【单人也要写 solo / 1girl 这类独占标签】，"
+                          "否则模型很容易自己多加人。\n"
+                          "\n"
+                          "⚠ 标签格式【不跟着中文一起膨胀】，它受一个硬性的技术上限约束。\n"
+                          "  SDXL 的 CLIP 编码器每 77 个 token 切一段，"
+                          "【每段单独编码一次，各自带自己的开始和结束标记，段与段之间互相看不见】。"
+                          "实测一个英文词约合 1.37 个 token，所以 50 个词 ≈ 70 token，"
+                          "刚好在一段之内还留一点余量 —— 这才是真实上限。\n"
+                          "  写超了有两个后果，都很严重：\n"
+                          "    一、切到第二段往后的词，模型基本不执行，字数白花；\n"
+                          "    二、更要紧的是【修饰语会和被修饰的词被切开】。"
+                          "假如 deep burgundy 落在第一段末尾、satin slip dress 被切到第二段开头，"
+                          "这两组词在编码时永远碰不上面，模型就不知道是谁 burgundy —— "
+                          "这是属性串位最常见的成因。\n"
+                          "  所以压到篇幅档给的词数【不是少写内容】，是让写下的每个词都真的生效。"
+                          "标签的信息密度本来就比散文高三倍："
+                          "\u300c身穿亮面漆皮炭黑挂脖背心\u300d二十个字，"
+                          "写成 black patent leather halter top 只要五个词。"
+                          "\n"
+                          "  ⚠ 标签格式下，详细档和适中档【只差几个词，区别在取舍不在长度】。"
+                          "详细档把额度全花在画面本身；适中档留出余量，"
+                          "方便用户自己再加 LoRA 触发词和质量词。\n"
+                          "  ⚠ 【用户自己写死的内容不参与压缩】：用户指定的主体、服装、颜色、数量、"
+                          "LoRA 触发词、特殊语法，一律先占位，压缩只砍你自己补的那部分。"
+                          "用户写死了 15 个词，你自己补的部分就只剩 35 个词的额度。\n"
+                          "\n"
+                          "⚠⚠ 标签格式【不适用「保留全部视觉细节」那一条】。"
+                          "中文草稿有三四百字，压进篇幅档给的那几十个词物理上做不到，"
+                          "所以这里必须【按优先级取舍】，不是全量转写。\n"
+                          "  先保，丢了画面就直接错：\n"
+                          "    1. 主体类型 + 数量（solo / 1girl / two women / a lone tree）\n"
+                          "    2. 媒介和风格大类（photo / illustration / 3d render / oil painting）\n"
+                          "    3. 景别 + 机位\n"
+                          "    4. 主体最醒目的 3~4 项：服装或外观主色 + 材质、发型或轮廓、在做什么\n"
+                          "    5. 环境，一到两个词组说清在哪\n"
+                          "    6. 光线的方向 + 冷暖\n"
+                          "    7. 画面质感（film grain / bokeh / sharp focus）\n"
+                          "  超了额度就【从下面这些开始砍】，顺序从先砍到后砍：\n"
+                          "    纹样和细部装饰 → 远景的陈设物件 → 投影落在哪 → 光比 → "
+                          "构图法 → 表情的细微差别 → 五个词以上的长短语\n"
+                          "  ⚠ 砍的只能是你自己补的内容。用户写死的部分一律先占位，不参与取舍。",
     "JSON格式要求": ' 输出格式：只输出一个 JSON 对象，不要代码块，形如 {"zh": "中文扩写内容", "en": "英文内容"}',
-    "不扩写_中文": "你是 AI 绘画提示词整理师。将用户的描述整理成流畅规范的中文提示词，保持原意，修正语法，不增加内容，用逗号连接短句。",
-    "不扩写_英文句子": "You are an AI image prompt translator. Translate the user description into natural English sentences for AI image generation. Do NOT add content beyond what the user specified. Output English only.",
+    "不扩写_中文": (
+        "你是 AI 绘画提示词整理师。将用户的描述整理成流畅规范的中文提示词，保持原意，修正语法，不增加内容，单一场景用逗号连接短句写成一段；用户按区域分条描述的多区域画面（多视图、分格、拼图），保留原有的分条和位置标注，不要合并成一段。"
+    ),
+    "不扩写_英文句子": (
+        "You are an AI image prompt translator. Translate the user description into natural English sentences for AI image generation. Do NOT add content beyond what the user specified. If the user describes a multi-region image region by region (multi-view sheet, panels, collage), keep the numbered items and position labels; otherwise write flowing sentences. Output English only."
+    ),
     "不扩写_英文标签": "You are an AI image prompt translator. Translate the user description into English comma-separated tags for SDXL, using standard Stable Diffusion community tags. Do NOT add content beyond what the user specified. Output English only.",
     "负面词": "你是 AI 绘画提示词工程师。用户描述的是画面中不想要的内容。转写为英文负面提示词，逗号分隔短语，只补充与用户意图直接相关的负面词，不堆砌无关的通用词。Output English only.",
     "图像_中文": (
+        (
         "你是 AI 绘画提示词提取师。分析图片的全部视觉特征，生成能复现这张画面的中文提示词。\n"
-        "必须逐项检查并写出（图中有就写，没有就跳过，不要编造）：\n"
-        "1 主体：性别、年龄感、族裔特征、脸型五官特点\n"
-        "2 发型：长度、发色、造型方式、发饰\n"
-        "3 妆容与面部装饰：花钿、贴纸、痣、彩绘\n"
-        "4 服装：款式、材质（金属/丝绸/纱/皮革）、颜色、纹样、露出部位\n"
-        "5 配饰：头饰、耳饰、项链、手镯、纹身、持物\n"
-        "6 姿态：身体朝向、头部角度、视线方向、手部动作、表情\n"
-        "7 景别与构图：特写/半身/全身、竖构图或横构图、主体在画面中的位置\n"
-        "8 镜头：视角高低、焦段感、景深虚化程度\n"
-        "9 光线：主光方向、侧逆光或顺光、光比、色温\n"
-        "10 配色：主色调、对比色\n"
-        "11 背景：场景内容、虚化程度、光斑或粒子等元素\n"
-        "12 风格与质感：写实/CG/插画/摄影、渲染质感、皮肤与材质细节\n"
-        "只描述图中真实存在、肉眼可见的内容，看不见的部分（如被遮挡的下半身、鞋子）一律不写。\n"
-        "输出一整段，用逗号连接短句，不要编号、不要小标题、不要解释。"
+        "\n"
+        "开头第一句（20~30 字）先回答四件事：这是什么图（媒介风格）→ 画的是什么（可数主体写明数量）→ 在哪 → 处于什么状态。\n"
+        "然后按【画面维度】里的五层逐层写，并遵守其中「按主体类型走」和「多主体锚定」的规则 —— 主体是建筑、静物、动物时，不要套人物那套维度。\n"
+        "\n"
+        "⚠ 和扩写模式的唯一区别：【只写图里真实存在、肉眼可见的东西】。\n"
+        "· 看不见的部分（被遮挡的下半身、画面外的鞋子）一律不写，不要脑补。\n"
+        "· 不确定的东西要说成不确定：「像是笔记本或平板」、「木质或深色层压板」。只有确实看清的才写死。\n"
+        "· 画面上没有文字就不要编文字；有文字就原样照抄，放进引号里，保持原字种。\n"
+        "\n"
+        "版式按图片本身的结构来：\n"
+        "· 是一个完整场景：输出一整段，用逗号连接短句，不要编号、不要小标题。\n"
+        "· 本身由几个独立区域组成（多视图设定图、分格、拼图、信息图）：先一句交代整体版式（比例、区域数量和排列、背景与光线），再每个区域一条并标明位置，最后一条写各区域之间一致的东西。分条只用数字序号和位置标注，不要用 markdown 符号。\n"
+        "不要写任何解释。"
+    )
     ),
+
     "图像_英文句子": (
-        "You are an AI image prompt extractor. Analyze all visual features and write an English natural "
-        "language prompt that could recreate this image.\n"
-        "Systematically cover (skip anything not visible, never invent): subject (gender, age, ethnicity, "
-        "facial features); hair (length, color, styling, hair accessories); makeup and face decorations; "
-        "clothing (style, material, color, patterns, exposed areas); accessories (headpiece, earrings, "
-        "necklace, bracelets, tattoos, held objects); pose (body orientation, head angle, gaze direction, "
-        "hand gestures, expression); shot type and composition; camera angle and depth of field; lighting "
-        "(direction, rim/side/front light, contrast, color temperature); color palette; background elements "
-        "and blur; art style and rendering quality.\n"
-        "Describe only what is actually visible. Output English only, no explanations, no negative prompts."
+        "You are an AI image prompt extractor. Analyze every visual feature and write an English natural-language prompt that could recreate this image.\n"
+        "\n"
+        "Open with ONE sentence (about 20~30 words) answering four things in order: what kind of image this is (medium and style) -> what is depicted (state the count for countable subjects) -> where -> in what state or action.\n"
+        "Then work through the five layers defined in the shot-dimensions section, and follow its rules for 'dimensions by subject type' and 'anchoring multiple subjects'. If the subject is a building, a still life, an animal or a landscape, do NOT apply the human checklist (facial features, hair, makeup, pose) to it.\n"
+        "\n"
+        "The one difference from expansion mode: write ONLY what is actually there and visible.\n"
+        "- Anything hidden (an occluded lower body, shoes outside the frame) is left out. Never infer it.\n"
+        "- State uncertainty as uncertainty: 'what looks like a notebook or tablet', 'wood or dark laminate'. Commit only to what you can genuinely see.\n"
+        "- If there is no text in the image, do not invent any. If there is, copy it verbatim in quotes and keep the original script.\n"
+        "\n"
+        "Let the layout follow the structure of the image itself:\n"
+        "- A single continuous scene: write flowing prose. No numbering, no headings.\n"
+        "- An image made of several separate regions (multi-view character sheet, comic panels, collage, infographic): open with one sentence on the overall layout (aspect ratio, number and arrangement of regions, shared background and lighting), then one numbered item per region that starts with its position (Far left / Second from left / Top / Panel 3...), and end with one item on what must stay consistent across regions. Use only numbers and position labels, no markdown symbols.\n"
+        "Output English only, no explanations."
     ),
-    "图像_英文标签": (
-        "You are an AI image prompt extractor. Analyze all visual features and generate a standard AI art "
-        "positive prompt as English comma-separated tags.\n"
-        "Systematically extract (skip anything not visible, never invent): subject and facial features; hair "
-        "and hair accessories; makeup and face decorations; clothing style, material, color and patterns; "
-        "accessories, jewelry, tattoos, held objects; pose, body orientation, gaze direction, hand gestures, "
-        "expression; shot type and composition; camera angle and depth of field; lighting direction and "
-        "color temperature; color palette; background elements; art style, rendering type and image quality.\n"
-        "Arrange in order: subject, hair and face, clothing, accessories, pose and gaze, composition and "
-        "camera, lighting and color, background, style and quality.\n"
-        "Use standard Stable Diffusion community tags (1girl, looking at viewer, upper body, rim light, "
-        "bokeh, highly detailed). Describe only what is actually visible.\n"
-        "Output the positive prompt only, no explanations, no negative prompts."
-    ),
+    "图像_英文标签": "You are an AI image prompt extractor. Analyze every visual feature and generate a positive prompt as English comma-separated tags for SDXL.\n\nLead with the subject type and its count (solo / 1girl / two women / a lone tree), then the medium and style class, then work through the five layers defined in the shot-dimensions section. Follow its rules for 'dimensions by subject type' -- if the subject is a building, a still life, an animal or a landscape, do NOT apply the human checklist (facial features, hair, makeup, pose) to it.\nUse standard Stable Diffusion community tags (solo, looking at viewer, upper body, rim light, bokeh, highly detailed). Each tag is 1~4 words. Colors carry a modifier (deep navy, not blue); materials get their own tag (brushed metal, matte plastic).\n\nTake from the five layers ONLY what the tag vocabulary actually has words for: shot type (close-up / full body), camera angle (from below / from above), depth of field (depth of field / bokeh), lighting (rim light / backlit / soft lighting), material, color, style and texture.\nDimensions with no community tag -- lighting ratio, where the shadow falls, composition-rule names, f-numbers and shutter speeds -- are NOT to be forced into strings of words. They do not take effect and only dilute the tags that do.\n\nHARD CEILING. SDXL's CLIP encoder splits the prompt every 77 tokens and encodes each chunk separately, with its own start and end markers, so the chunks cannot see each other. One English word runs about 1.37 tokens, so roughly 50 words is about 70 tokens -- just inside one chunk. Going over costs you twice: words past the first chunk are largely not executed, and worse, a modifier can be split from the word it modifies (deep burgundy at the end of chunk one, satin slip dress at the start of chunk two -- the model can no longer tell what is burgundy). This is the most common cause of attribute bleed. Stay inside the word count given for your detail level.\n\nIf you run out of room, cut by priority. Keep first, in this order:\n  1. subject type + count\n  2. medium and style class (photo / illustration / 3d render / oil painting)\n  3. shot type + camera angle\n  4. the 3~4 most prominent subject traits: main color + material, hair or silhouette, action\n  5. the setting, in one or two tag phrases\n  6. light direction + warm/cool\n  7. image texture (film grain / bokeh / sharp focus)\nCut in this order when over budget: ornament and fine detail -> distant background props -> where the shadow falls -> lighting ratio -> composition rules -> fine shades of expression -> any phrase longer than four words.\n\nDescribe only what is actually visible; never invent. Output the positive prompt only, no explanations, no negative prompts.",
     "图像_负面词": "You are an AI image prompt engineer. Analyze the image, identify visual defects or undesirable elements, and write them as English negative prompt tags separated by commas. Output English only.",
     "图像详细度_不扩写": "详细程度：只写最核心的信息——主体、服装主要特征、景别、整体风格，控制在 15~25 个词或 30~50 字。",
-    "图像详细度_简洁": "详细程度：写主要特征即可，覆盖主体、发型、服装、姿态、光线、风格，控制在 25~45 个词或 50~90 字。",
-    "图像详细度_适中": "详细程度：覆盖上述全部检查项的主要内容，每项用 1~2 个短语描述，控制在 50~80 个词或 100~160 字。",
-    "图像详细度_详细": "详细程度：逐项展开上述全部检查项，材质、纹样、光线层次、背景元素都要写清楚，控制在 80~130 个词或 180~280 字。宁可细也不要漏，但仍然只写图中真实可见的内容。",
+    "图像详细度_简洁": '详细程度：五层都要出现，但每层只取最关键的一两项 —— 拍摄定下景别和机位，主体取该类型最要紧的 2~3 项，环境一句话说清在哪，光线给方向和冷暖，风格一个词。\n篇幅（按你要输出的格式对号入座）：\n  · 中文：60~100 字\n  · 英文自然语言：60~90 词\n  · 英文标签：25~32 词\n宁可少写也不要含糊 —— 写到的每一项都要具体。',
+    "图像详细度_适中": '详细程度：五层的主要维度都要覆盖到，每项用一两个短语讲清。\n篇幅（按你要输出的格式对号入座）：\n  · 中文：150~250 字\n  · 英文自然语言：160~230 词\n  · 英文标签：38~45 词\n每一句都要带新信息，不要把同一件事换个说法再说一遍。',
+    "图像详细度_详细": '详细程度：五层逐项展开 —— 材质、纹样、新旧状态、细部、光线层次、前中后景的背景元素都要写清楚。\n篇幅（按你要输出的格式对号入座）：\n  · 中文：300~450 字\n  · 英文自然语言：300~420 词\n  · 英文标签：45~52 词\n⚠ 标签那一档【不跟着中文一起膨胀】：SDXL 的 CLIP 每 77 个 token 切一段，一个英文词约合 1.37 token，50 个词刚好在一段之内。超出去的词不但不执行，还会把修饰语和被修饰的词切开，造成属性串位。\n宁可细也不要漏，但仍然【只写图中真实可见的内容】，不确定的要说成不确定。',
+    "编辑读图": (
+        "【先读图，再动笔】写指令之前，把每张图按这个顺序完整过一遍。"
+        "这一步【不输出】，只是让你真正知道图里有什么 —— "
+        "没读透就写指令，只会写出\u300c把图1的衣服换成图2的\u300d这种笼统话，"
+        "模型照着做必然跑偏。\n"
+        "\n"
+        "1. 整体：画面类型、媒介、风格、画幅\n"
+        "2. 拍摄：景别、机位高度与方位、景深虚化程度。"
+        "【迁移进来的元素必须匹配这几项】，否则贴上去一眼就是假的\n"
+        "3. 主体：是什么 → 在画面的什么位置 → 【从上到下逐部位看】\n"
+        "     人物：头发 → 面部 → 颈肩 → 上身 → 腰胯 → 下身 → 手与脚\n"
+        "     物体：顶部 → 主体 → 底部 → 与承托面的接触处\n"
+        "     其它主体按同样思路，从一端到另一端走完，不要跳着看\n"
+        "4. 细部：材质、纹样、颜色、新旧状态、配饰、小物件、文字\n"
+        "5. 环境：【从远到近】—— 背景 → 中景 → 前景；"
+        "以及主体和环境的接触关系（阴影落在哪、谁遮住谁、有没有反射）\n"
+        "6. 光线：主光方向、软硬、色温，高光和阴影分别落在什么位置\n"
+        "\n"
+        "读完之后再写指令。指令里提到的每个部位都要【具体到你刚才看到的那个东西】："
+        "不是\u300c图1的衣服\u300d，而是\u300c图1中那件米白色蕾丝镶边吊带，"
+        "肩带细、裙摆到膝上\u300d。"
+    ),
+
     "编辑_英文": (
-        "You are an expert at writing instructions for image editing models (Qwen-Image-Edit, FLUX Kontext). "
-        "The user describes what they want to change, usually referring to the pictures as 图1/图2 (Picture 1/Picture 2).\n"
-        "Look at every picture carefully, then write ONE clear editing instruction in English:\n"
+        (
+        "You are an expert at writing instructions for image editing models (Qwen-Image-Edit, FLUX Kontext). The user describes what they want to change, usually referring to the pictures as 图1/图2 (Picture 1/Picture 2).\n"
+        "After reading every picture in the order above, write ONE clear editing instruction in English:\n"
         "1. Refer to pictures as \"Picture 1\", \"Picture 2\" and so on, matching the given order.\n"
-        "2. State exactly what to change, and describe the transferred elements concretely by what you see "
-        "(style, material, color, pattern, accessories), not vaguely like \"the clothes in Picture 1\".\n"
+        "2. State exactly what to change, and describe the transferred elements concretely by what you see (style, material, color, pattern, accessories), not vaguely like \"the clothes in Picture 1\".\n"
         "3. State explicitly what must stay unchanged (face, identity, hairstyle, pose, background, lighting) unless the user wants it changed.\n"
-        "4. Keep it one coherent instruction, imperative voice. No explanations, no bullet points.\n"
+        "4. The blend must match: lighting direction, color temperature, perspective, scale and depth of field must agree with the target picture. No two light sources at the seam.\n"
+        "5. Normally write one coherent instruction in the imperative voice. If the result itself is made of several separate regions (e.g. turning the reference into a multi-view character sheet, a collage or comic panels), write it region by region: one sentence on the overall layout (aspect ratio, number and arrangement of regions, background and lighting), then one numbered item per region starting with its position, and a final item on what must stay consistent across regions. Use only numbers and position labels, no markdown symbols. No explanations.\n"
         "Output English only."
+    )
     ),
     "编辑_中文": (
+        (
         "你是图像编辑模型（Qwen-Image-Edit、FLUX Kontext 等）的指令撰写专家。用户会描述想怎么改图，通常用 图1、图2 指代图片。\n"
-        "仔细看每一张图，然后写出一条清晰的中文编辑指令：\n"
+        "按上面的顺序把每张图读完之后，写出一条清晰的中文编辑指令：\n"
         "1. 用\"图1\"\"图2\"等称呼图片，与给出的顺序一致。\n"
         "2. 明确要改什么，要迁移的元素按你看到的具体写出来（款式、材质、颜色、纹样、配饰），不要笼统写成\"图1的衣服\"。\n"
         "3. 明确写出必须保持不变的部分（脸、身份特征、发型、姿势、背景、光线），除非用户要改它们。\n"
-        "4. 写成一条连贯的祈使句指令，不要解释、不要分点。"
+        "4. 融合必须对得上：光线方向、色温、透视、比例、景深要和目标图一致，接缝处不能出现两套光。\n"
+        "5. 一般写成一条连贯的祈使句指令。如果要生成的结果本身由几个独立区域组成（比如把参考图做成多视图设定图、拼图、分格），就按区域分条写：先一句交代整体版式（比例、区域数量和排列、背景与光线），再每个区域一条并标明位置，最后一条写各区域之间必须一致的东西。分条只用数字序号和位置标注，不要用 markdown 符号。不要解释。"
+    )
     ),
     "编辑详细度_不扩写": "详细程度：只做必要的规范化，一两句话说清改什么、保留什么，不展开描述细节。",
-    "编辑详细度_简洁": "详细程度：简要说明要改的内容和关键特征，保留部分只列最重要的一两项。30~50 词或 50~80 字。",
-    "编辑详细度_适中": "详细程度：写清要迁移元素的主要特征（款式、颜色、材质），并列出需要保留的部分。50~90 词或 80~150 字。",
-    "编辑详细度_详细": "详细程度：逐项展开要迁移元素的细节（款式、材质、颜色、纹样、配饰、位置关系），完整列出需要保留的部分，并说明融合要自然（光线、比例、透视一致）。90~150 词或 150~250 字。",
+    "编辑详细度_简洁": '详细程度：简要说明要改什么、改成什么样，保留部分只列最重要的一两项。30~50 词或 50~80 字。',
+    "编辑详细度_适中": '详细程度：写清改动涉及的主要特征（款式、颜色、材质，或者要调整的光线、环境、构图），并列出需要保留的部分。50~90 词或 80~150 字。',
+    "编辑详细度_详细": '详细程度：逐项展开改动的细节 —— 如果是迁移元素，写清款式、材质、颜色、纹样、配饰、位置关系；如果是删除、替换背景、改光线或改姿态，就写清改前改后各是什么样。完整列出需要保留的部分，并说明融合要自然（光线、比例、透视一致）。90~150 词或 150~250 字。',
     "多图融合": "本次提供了多张参考图，按顺序称为图1、图2……。请按用户文字要求，从各图中提取对应元素，组合成描述**一个统一画面**的提示词；用户没有说明分工时，以图1为主体，其他图作为补充参考（服装、风格、场景等）。不要把多张图分别描述。",
     "随机提示": "补充：请给出与上次不同的具体场景、光线、构图设定，紧扣原意但换一种视觉方案。",
     "英文重试强化": "IMPORTANT: Your previous answer contained Chinese characters. Output MUST be in English ONLY. Do not include any Chinese character.",
 }
+
+
+# 模板版本号。内容改进后在这里 +1，用户 json 里的旧版本会在重启时自动替换。
+# 没列在这里的模板一旦写进 json 就永远以用户的为准。
+# ⚠ 和视频节点共用同一个「模板版本」字典（VERSION_KEY），两边 key 不能重名。
+TEMPLATE_VERSIONS = {
+    "画面维度": 2,
+    "图像_中文": 3,
+    "编辑读图": 1,
+    "编辑_英文": 3,
+    "编辑_中文": 3,
+    "扩写核心": 3,
+    "篇幅_简洁": 5,
+    "篇幅_适中": 5,
+    "篇幅_详细": 6,
+    "输出_中文": 3,
+    "输出_英文句子": 4,
+    "输出_英文标签": 5,
+    "图像_英文句子": 3,
+    "图像_英文标签": 2,
+    "图像详细度_简洁": 2,
+    "图像详细度_适中": 2,
+    "图像详细度_详细": 2,
+    "编辑详细度_简洁": 2,
+    "编辑详细度_适中": 2,
+    "编辑详细度_详细": 2,
+    "不扩写_中文": 2,
+    "不扩写_英文句子": 2,
+}
+
+VERSION_KEY = "模板版本"
 
 
 def ensure_templates_file():
@@ -154,10 +423,46 @@ def ensure_templates_file():
         except Exception:
             data = {}
     changed = not os.path.isfile(TEMPLATES_FILE)
+
+    # 哪些带版本的模板本来就不在文件里：它们是新写进去的，不算"升级"，
+    # 否则全新安装会误报一堆"已升级"。
+    fresh = {k for k in TEMPLATE_VERSIONS if k not in data}
+
     for k, v in DEFAULT_TEMPLATES.items():
         if k not in data:
             data[k] = v
             changed = True
+
+    # 版本升级：内置版本号比 json 里的新时，替换那一条。
+    # 用户自己改过而版本没变的，一个字都不动。
+    vers = data.get(VERSION_KEY)
+    if not isinstance(vers, dict):
+        vers = {}
+    upgraded = []
+    for k, v in TEMPLATE_VERSIONS.items():
+        if k not in DEFAULT_TEMPLATES:
+            continue
+        try:
+            old_v = int(vers.get(k, 1))
+        except Exception:
+            old_v = 1
+        if k in fresh:
+            vers[k] = v
+            changed = True
+        elif v > old_v:
+            data[k] = DEFAULT_TEMPLATES[k]
+            vers[k] = v
+            changed = True
+            upgraded.append(k)
+        elif vers.get(k) != v:
+            vers[k] = v
+            changed = True
+    if vers != data.get(VERSION_KEY):
+        data[VERSION_KEY] = vers
+        changed = True
+    if upgraded:
+        print("[高级提示词] 翻译指令模板已升级到新版：" + "、".join(upgraded))
+
     if changed:
         try:
             with open(TEMPLATES_FILE, "w", encoding="utf-8") as f:
@@ -192,18 +497,21 @@ def _build_system(mode, expansion, style_hint, extra_rules, has_image=False, cus
     if custom and custom.strip():
         parts.append(custom.strip())
     elif mode in EDIT_MODES:
+        parts.append(tpl["编辑读图"])
         parts.append(tpl["编辑_英文" if mode == MODE_EDIT_EN else "编辑_中文"])
         lvl = {EXP_NONE: "编辑详细度_不扩写", EXP_BRIEF: "编辑详细度_简洁",
                EXP_MID: "编辑详细度_适中", EXP_DETAIL: "编辑详细度_详细"}.get(expansion)
         if lvl and lvl in tpl:
             parts.append(tpl[lvl])
         parts.append(tpl["硬性规则"])
-    elif mode == MODE_PASS and not has_image:
+    elif mode == MODE_PASS:
         return ""
     elif has_image:
-        actual = MODE_ZH if mode == MODE_PASS else mode
+        actual = mode
         key = "图像_负面词" if actual == MODE_NEG else "图像_" + _MODE_KEY.get(actual, "中文")
         parts.append(tpl[key])
+        if actual != MODE_NEG:
+            parts.append(tpl["画面维度"])
         # 图像逆推：扩写程度用来控制"描述多细"，而不是脑补内容
         if actual != MODE_NEG:
             lvl = {EXP_NONE: "图像详细度_不扩写", EXP_BRIEF: "图像详细度_简洁",
@@ -221,6 +529,7 @@ def _build_system(mode, expansion, style_hint, extra_rules, has_image=False, cus
         parts.append(tpl["硬性规则"])
     else:
         parts.append(tpl["扩写核心"])
+        parts.append(tpl["画面维度"])
         parts.append(tpl[_EXP_KEY.get(expansion, "篇幅_适中")])
         if mode == MODE_ZH:
             parts.append(tpl["输出_" + _MODE_KEY[mode]])
@@ -334,11 +643,17 @@ class AIPromptTranslator:
                         "中文（Qwen/ZIT/通用）：中文自然语言，适合 Z-Image、Qwen-Image、可图、混元、Wan\n"
                         "英文句子（Krea2/FLUX）：英文自然语言句子，适合 Krea 2、FLUX.2\n"
                         "英文标签（SDXL/Pony）：英文逗号标签，适合 SDXL、Pony、Illustrious\n"
-                        "· 视频模式接入图片时按“首帧”处理，描述画面接下来如何运动\n"
+                        "\n"
+                        "⚠ SDXL / Pony / Illustrious 的编码器【完全看不懂中文】，"
+                        "给它们用必须选「英文标签」。选中文喂进去等于喂噪声，出图基本随机。\n"
+                        "⚠ 多个外观不同的主体（如“4个人各穿各的”），SDXL 这代架构做不到，"
+                        "描述会糊成一个人。这种需求用 Qwen-Image / FLUX，"
+                        "或者配区域提示词、ControlNet。\n"
+                        "\n"
                         "编辑指令（英文/中文）：给 Qwen-Image-Edit、FLUX Kontext 等编辑模型用的改图指令；"
                         "文本框写意图如“让图2的女孩穿上图1的衣服”。Kontext 只认英文，Qwen-Edit 中英都行\n"
                         "负面词（英文）：把不想要的内容整理成英文负面提示词\n"
-                        "不处理：原样输出，不调用 API（接了图像时按中文描述图像）"
+                        "不处理：原样输出，不调用 API，接了图也不读"
                     ),
                 }),
                 "扩写程度": (EXPANSIONS, {
@@ -438,15 +753,30 @@ class AIPromptTranslator:
         image_list = [images.get("图像" + str(i)) for i in range(1, MAX_IMAGES + 1)]
         image_list = [(i + 1, img) for i, img in enumerate(image_list) if img is not None]
         has_image = bool(image_list)
+
+        # 编辑指令必然要引用「图1」「图2」。一张图都没有时，AI 只能凭空编造
+        # 这些图里有什么，输出百分百是假的 —— 宁可报错也不能交出去。
+        # 最常见的原因：图片节点被 Bypass 了，但目标格式还停在编辑指令。
+        if 目标格式 in EDIT_MODES and not has_image:
+            msg = ("「" + 目标格式 + "」需要接入图片，现在一张图都没有。\n"
+                   "检查是不是把「加载图像」节点 Bypass／Mute 了，或者线没接上。\n"
+                   "没有图的话，AI 只能凭空编造「图1」「图2」里有什么，"
+                   "写出来的编辑指令看着像真的，实际和你的图毫无关系。")
+            write_error_log(msg)
+            raise RuntimeError(msg)
         providers = get_all_providers()
         cfg       = providers.get(服务商, {})
         style     = cfg.get("style", "openai")
         is_mt     = style == "mt"
 
-        # ── 不处理（无图像）：不调用 API ────────────────────────────────────────
-        if 目标格式 == MODE_PASS and not has_image:  # 不处理且无图：直接输出
+        # ── 不处理：原样输出，不调用 API。接了图也不读 ──────────────────────────
+        # 以前接了图会自动改成「中文看图」，和「不处理」这个名字对不上，
+        # 用户写好的提示词会被 AI 悄悄重写一遍。
+        if 目标格式 == MODE_PASS:
             out = join_parts(开头固定文字, text, 结尾固定文字)
             log.head("模式：不处理（未调用 API）")
+            if has_image:
+                log.add("接了 " + str(len(image_list)) + " 张图，不处理模式不读图，已忽略")
             log.add("最终输出：" + (out[:200] or "（空）"))
             log.flush()
             return (out,)
@@ -512,8 +842,9 @@ class AIPromptTranslator:
             img_info.append("图" + str(idx) + " " + str(o[0]) + "\u00d7" + str(o[1])
                             + ("" if o == n else "\u2192" + str(n[0]) + "\u00d7" + str(n[1])))
 
-        actual_mode  = (MODE_ZH if 目标格式 == MODE_PASS else 目标格式) if has_image else 目标格式
+        actual_mode  = 目标格式
         is_edit      = actual_mode in EDIT_MODES
+
         needs_expand = (扩写程度 != EXP_NONE and actual_mode != MODE_NEG)
         temperature  = 0.2 if (has_image or is_edit or not needs_expand) else 创意度
         use_json     = needs_expand and not has_image and not is_edit and actual_mode in (MODE_EN_NL, MODE_EN_TAG)
