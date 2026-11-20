@@ -1,8 +1,29 @@
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
 
-// 节点类型：只处理这两个
-const TRANSLATOR_TYPES = ["AIPromptTranslator", "AIPromptTranslatorCLIP"];
+// 共用「获取模型列表」按钮及搜索选择弹窗的节点。
+const TRANSLATOR_TYPES = ["AIPromptTranslator", "AIPromptTranslatorCLIP", "VideoPromptWriter", "NodeLocalizerAI"];
+const LEGACY_AUTO_MODEL = "自动（推荐模型）";
+const isExplicitModel = (v) => typeof v === "string" && v.trim() && v.trim() !== LEGACY_AUTO_MODEL;
+
+// 空值只是未选择状态，拿到列表后下拉只提供真实模型。
+function setLocalizerOptions(widget, models = [], includeCurrent = true) {
+  const saved = includeCurrent && isExplicitModel(widget.value) ? widget.value : "";
+  const choices = [...new Set([...models, saved].filter(isExplicitModel))];
+  widget.options ??= {};
+  widget.options.values = choices.length ? choices : [""];
+  if (!saved) widget.value = "";
+}
+// 需要动态图像输入口的节点，以及各自的输入口前缀和上限
+//   翻译节点：图像1..图像10
+//   视频节点：参考图1..参考图9（全参考模式，官方上限 9 张；首帧/尾帧是固定口，不参与）
+// ⚠ 视频节点【不要】放进来。它的参考图走 ComfyUI 官方的 io.Autogrow（V3 schema），
+//    动态增减由前端原生处理，和官方 MiniMaxH3ReferenceToVideo 同一套机制。
+//    自己用 addInput() 模仿会触发按内容重排，把节点撑高——试过三版都治不好。
+const DYNAMIC_IMG_TYPES = {
+  AIPromptTranslator:     { prefix: "图像", max: 10 },
+  AIPromptTranslatorCLIP: { prefix: "图像", max: 10 },
+};
 
 // 记录鼠标位置，用于弹出模型列表的定位
 let lastPointer = { x: window.innerWidth / 2, y: window.innerHeight / 3 };
@@ -62,9 +83,9 @@ function showModelPicker(models, current, onPick) {
   const render = () => {
     const q = input.value.trim().toLowerCase();
     list.innerHTML = "";
-    models.filter((m) => m.toLowerCase().includes(q)).forEach((m, idx) => {
+    models.filter((m) => m.toLowerCase().includes(q)).forEach((m) => {
       const item = document.createElement("div");
-      item.textContent = (idx === 0 && !q ? "⭐ " : "") + m + (m === current ? " ✓" : "");
+      item.textContent = m + (m === current ? " ✓" : "");
       Object.assign(item.style, {
         padding: "6px 10px", borderRadius: "4px", cursor: "pointer",
         background: m === current ? "#34373d" : "transparent",
@@ -86,48 +107,61 @@ function showModelPicker(models, current, onPick) {
 }
 
 // ─── 动态图像输入口：接一个出现下一个，最多 10 个 ─────────────────────────────────
-const IMG_RE  = /^图像(\d+)$/;
-const MAX_IMG = 10;
-const DEFAULT_WIDTH = 460;
+// 新拖出来的节点给个像样的初始尺寸。
+// ⚠ 只能在 onNodeCreated 里【同步】设一次。时序是：
+//     节点创建 → onNodeCreated（设这里的值）→ ComfyUI 恢复工作流里存的尺寸
+//   同步设的会被后面的恢复覆盖掉，这正是我们要的；
+//   但凡用 setTimeout / requestAnimationFrame 延迟设，就排到恢复之后了，
+//   结果是用户拖好的尺寸每次切换工作流都被打回去。别再加延迟。
+const NODE_SIZE = {
+  AIPromptTranslator:     [460, 520],
+  AIPromptTranslatorCLIP: [460, 540],
+  VideoPromptWriter:      [560, 640],
+};
 
-function imgNum(inp) {
+const imgRe = (prefix) => new RegExp("^" + prefix + "(\\d+)$");
+
+
+function imgNum(inp, re) {
   if (!inp || inp.widget || typeof inp.name !== "string") return 0;
-  const m = inp.name.match(IMG_RE);
+  const m = inp.name.match(re);
   return m ? parseInt(m[1], 10) : 0;
 }
 
-function syncImageInputs(node) {
-  if (!node?.inputs || node.__cnSyncing) return;
+function syncImageInputs(node, cfg) {
+  if (!node?.inputs || node.__cnSyncing || !cfg) return;
+  const re = imgRe(cfg.prefix);
   node.__cnSyncing = true;
   try {
     // 已接线的最大编号 → 需要显示到 最大编号+1（留一个空位）
     let maxConnected = 0;
     for (const inp of node.inputs) {
-      const n = imgNum(inp);
+      const n = imgNum(inp, re);
       if (n && inp.link != null) maxConnected = Math.max(maxConnected, n);
     }
-    const want = Math.min(maxConnected + 1, MAX_IMG);
+    const want = Math.min(maxConnected + 1, cfg.max);
 
     // 从后往前删：编号超出且没接线的
     for (let k = node.inputs.length - 1; k >= 0; k--) {
       const inp = node.inputs[k];
-      const n = imgNum(inp);
+      const n = imgNum(inp, re);
       if (n > want && inp.link == null) node.removeInput(k);
     }
     // 补齐 1..want 中缺少的
-    const have = new Set(node.inputs.map(imgNum).filter(Boolean));
+    const have = new Set(node.inputs.map((i) => imgNum(i, re)).filter(Boolean));
     for (let n = 1; n <= want; n++) {
-      if (!have.has(n)) node.addInput("图像" + n, "IMAGE");
+      if (!have.has(n)) node.addInput(cfg.prefix + n, "IMAGE");
     }
   } finally {
     node.__cnSyncing = false;
   }
-  // 高度收紧到刚好容纳内容，宽度保持
-  const min = node.computeSize?.();
-  if (min) node.setSize?.([Math.max(node.size[0], min[0]), min[1]]);
+  // ⚠ 这个函数里【不要】动节点尺寸。刷新页面、切换工作流、增减输入口都会走到这里，
+  //    任何 setSize / computeSize 重算都会把用户拖好的大小打回去。只重绘。
   node.setDirtyCanvas?.(true, true);
   app.graph?.setDirtyCanvas?.(true, true);
 }
+
+
 
 // ─── 注册扩展 ────────────────────────────────────────────────────────────────────
 app.registerExtension({
@@ -135,6 +169,7 @@ app.registerExtension({
 
   async beforeRegisterNodeDef(nodeType, nodeData) {
     if (!TRANSLATOR_TYPES.includes(nodeData.name)) return;
+    const isLocalizer = nodeData.name === "NodeLocalizerAI";
 
     const onCreated = nodeType.prototype.onNodeCreated;
     nodeType.prototype.onNodeCreated = function () {
@@ -144,21 +179,28 @@ app.registerExtension({
       const modelW   = findWidget(node, "模型");
       if (!providerW || !modelW) return result;
 
-      // 切换服务商时清空模型名
+      if (isLocalizer) setLocalizerOptions(modelW);
+      let requestId = 0;
+      let loading = false;
+      // 切换服务商时清空旧模型，忽略旧服务商正在返回的列表。
       const origCb = providerW.callback;
       providerW.callback = function () {
         const r = origCb?.apply(this, arguments);
+        requestId++;
+        loading = false;
+        if (isLocalizer) setLocalizerOptions(modelW, [], false);
         setWidget(node, modelW, "");
         return r;
       };
 
       // 获取模型列表按钮
-      let loading = false;
       const btn = node.addWidget("button", "🔄 获取模型列表", null, async () => {
         if (loading) return;
         loading = true;
+        const currentRequest = ++requestId;
         const provider = providerW.value;
-        notify("提示词翻译", `正在获取 ${provider} 的模型列表…`);
+        const isCurrent = () => currentRequest === requestId && providerW.value === provider;
+        notify("自定义节点", `正在获取 ${provider} 的模型列表…`);
         try {
           const resp = await api.fetchApi("/custom_nodes/models", {
             method: "POST",
@@ -170,18 +212,27 @@ app.registerExtension({
             }),
           });
           const data = await resp.json();
-          if (data.error) {
-            notify("获取模型列表失败", data.error, "error");
+          if (!isCurrent()) return;
+          const models = Array.isArray(data.models)
+            ? [...new Set(data.models.filter((m) => typeof m === "string" && m.trim() && (!isLocalizer || isExplicitModel(m))))]
+            : [];
+          if (data.error || !resp.ok || !models.length) {
+            notify("获取模型列表失败", data.error || "接口没有返回可用模型", "error");
           } else {
-            showModelPicker(data.models, modelW.value || data.default, (m) => {
+            if (isLocalizer) {
+              setLocalizerOptions(modelW, models);
+              node.setDirtyCanvas?.(true, true);
+            }
+            showModelPicker(models, modelW.value || (isLocalizer ? "" : data.default), (m) => {
+              if (!isCurrent()) return;
               setWidget(node, modelW, m);
-              notify("提示词翻译", `已选择：${m}`, "success");
+              notify("自定义节点", `已选择：${m}`, "success");
             });
           }
         } catch (err) {
-          notify("获取模型列表失败", String(err), "error");
+          if (isCurrent()) notify("获取模型列表失败", String(err), "error");
         } finally {
-          loading = false;
+          if (currentRequest === requestId) loading = false;
         }
       }, { serialize: false });
       btn.serialize = false;
@@ -190,14 +241,15 @@ app.registerExtension({
       // 但不改动序列化顺序，通过 onSerialize/onConfigure 保证重载不错位
       const bIdx = node.widgets.indexOf(btn);
       const pIdx = node.widgets.indexOf(providerW);
+      // ComfyUI 恢复位置数组时会跳过 serialize=false 的按钮。
       if (bIdx > -1 && pIdx > -1) {
         node.widgets.splice(bIdx, 1);
         node.widgets.splice(pIdx + 1, 0, btn);
       }
-      // 默认更宽、更矮：先收起多余的图像口，再按内容定高度
-      syncImageInputs(node);
-      const min = node.computeSize?.() ?? node.size;
-      node.setSize?.([Math.max(DEFAULT_WIDTH, min[0]), min[1]]);
+      if (DYNAMIC_IMG_TYPES[nodeData.name]) syncImageInputs(node, DYNAMIC_IMG_TYPES[nodeData.name]);
+      // 新节点的初始尺寸：同步设一次，不要延迟（理由见 NODE_SIZE 上方注释）
+      const want = NODE_SIZE[nodeData.name];
+      if (want) node.setSize?.([want[0], want[1]]);
       return result;
     };
 
@@ -205,9 +257,9 @@ app.registerExtension({
     const onConnChange = nodeType.prototype.onConnectionsChange;
     nodeType.prototype.onConnectionsChange = function (type, index, connected, linkInfo) {
       const r = onConnChange?.apply(this, arguments);
-      if (type === 1) {  // 1 = 输入端
-        const node = this;
-        setTimeout(() => syncImageInputs(node), 0);
+      if (type === 1 && DYNAMIC_IMG_TYPES[nodeData.name]) {  // 1 = 输入端
+        const node = this, cfg = DYNAMIC_IMG_TYPES[nodeData.name];
+        setTimeout(() => syncImageInputs(node, cfg), 0);
       }
       return r;
     };
@@ -229,7 +281,10 @@ app.registerExtension({
     nodeType.prototype.onConfigure = function (info) {
       const r = onConfigure?.apply(this, arguments);
       const self = this;
-      setTimeout(() => syncImageInputs(self), 0);
+      if (DYNAMIC_IMG_TYPES[nodeData.name]) {
+        const cfg = DYNAMIC_IMG_TYPES[nodeData.name];
+        setTimeout(() => syncImageInputs(self, cfg), 0);
+      }
       const vals = info?.properties?.cn_values;
       if (vals) {
         for (const w of this.widgets || []) {
@@ -237,6 +292,10 @@ app.registerExtension({
             w.value = vals[w.name];
           }
         }
+      }
+      if (isLocalizer) {
+        const modelW = findWidget(this, "模型");
+        if (modelW) setLocalizerOptions(modelW);
       }
       return r;
     };
